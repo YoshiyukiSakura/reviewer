@@ -1,0 +1,28 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Review status enum representing the lifecycle of a code review
+enum ReviewStatus {
+  PENDING // Review is waiting to be started
+  IN_PROGRESS // Review is currently being conducted
+  APPROVED // Review has been approved
+  REJECTED // Review has been rejected
+  CHANGES_REQUESTED // Changes have been requested
+}
+
+// Comment severity enum representing the importance level of review comments
+enum CommentSeverity {
+  INFO // Informational comment, no action required
+  SUGGESTION // Optional improvement suggestion
+  WARNING // Potential issue that should be addressed
+  ERROR // Critical issue that must be fixed
+}
