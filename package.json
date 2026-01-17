@@ -1,0 +1,15 @@
+{
+  "name": "reviewer",
+  "version": "1.0.0",
+  "description": "This is a planning workspace for seeder.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
