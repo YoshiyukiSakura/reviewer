@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Review model - represents a code review session
+model Review {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      ReviewStatus @default(PENDING)
+
+  // Source information (e.g., pull request, commit, etc.)
+  sourceType String? // e.g., "pull_request", "commit", "file"
+  sourceId   String? // External reference ID
+  sourceUrl  String? // URL to the source
+
+  // Author information
+  authorId   String
+  authorName String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  comments ReviewComment[]
+
+  @@index([authorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ReviewComment model - represents a comment on a review
+model ReviewComment {
+  id      String @id @default(cuid())
+  content String
+
+  // Position information for inline comments
+  filePath  String? // File path for file-level comments
+  lineStart Int? // Starting line number
+  lineEnd   Int? // Ending line number (for multi-line comments)
+
+  // Comment metadata
+  isResolved Boolean          @default(false)
+  severity   CommentSeverity?
+
+  // Author information
+  authorId   String
+  authorName String?
+
+  // Parent comment for threaded discussions
+  parentId String?
+  parent   ReviewComment?  @relation("CommentThread", fields: [parentId], references: [id])
+  replies  ReviewComment[] @relation("CommentThread")
+
+  // Review relation
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([filePath])
+}
+
+// Enum for review status
+enum ReviewStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  CHANGES_REQUESTED
+  CLOSED
+}
+
+// Enum for comment severity
+enum CommentSeverity {
+  INFO
+  SUGGESTION
+  WARNING
+  CRITICAL
+}
