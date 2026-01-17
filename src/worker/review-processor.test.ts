@@ -9,7 +9,6 @@ import {
   createDryRunProcessor,
   processReview,
   type ProcessPRParams,
-  type ProcessPRResult,
   type StatusCallback,
 } from './review-processor';
 

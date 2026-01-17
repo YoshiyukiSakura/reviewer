@@ -17,7 +17,7 @@ import {
   truncateDiff,
   detectLanguage,
   type ReviewContext,
-  type CommentSeverity as PromptCommentSeverity,
+  // CommentSeverity from prompts not used directly
 } from './prompts';
 
 // ========== Types ==========

@@ -9,7 +9,6 @@ import {
   fetchOpenPullRequests,
   createConfigFromEnv,
   type PRMonitorConfig,
-  type DetectedPullRequest,
   type NewPREvent,
   type UpdatedPREvent,
   type MonitorErrorEvent,
