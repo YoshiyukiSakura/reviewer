@@ -1,0 +1,2 @@
+-- This is an empty migration to baseline the current database state
+-- The database schema is already up to date with the Prisma schema
