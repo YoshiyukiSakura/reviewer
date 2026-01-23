@@ -4,7 +4,7 @@ self.__SERVER_FILES_MANIFEST={
     "distDir": ".next",
     "cacheComponents": false,
     "htmlLimitedBots": "[\\w-]+-Google|Google-[\\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight",
-    "assetPrefix": "",
+    "assetPrefix": "/reviewer",
     "trailingSlash": false,
     "images": {
       "deviceSizes": [
@@ -26,7 +26,7 @@ self.__SERVER_FILES_MANIFEST={
         256,
         384
       ],
-      "path": "/_next/image",
+      "path": "/reviewer/_next/image",
       "loader": "default",
       "loaderFile": "",
       "domains": [],
@@ -90,7 +90,7 @@ self.__SERVER_FILES_MANIFEST={
         "expire": 31536000
       }
     },
-    "basePath": "",
+    "basePath": "/reviewer",
     "expireTime": 31536000,
     "generateEtags": true,
     "poweredByHeader": true,
@@ -140,8 +140,8 @@ self.__SERVER_FILES_MANIFEST={
       "isExperimentalCompile": false
     }
   },
-  "appDir": "/Users/yoshiyuki/WebstormProjects/reviewer",
-  "relativeAppDir": "WebstormProjects/reviewer",
+  "appDir": "/Users/yoshiyuki/data/repos/.worktrees/cmki11va300218y6g1reqd0ej/exec-cmkr3d3r000018yayobc3onoj-cmkr3d3r3000a8yay68h2mafs",
+  "relativeAppDir": "data/repos/.worktrees/cmki11va300218y6g1reqd0ej/exec-cmkr3d3r000018yayobc3onoj-cmkr3d3r3000a8yay68h2mafs",
   "files": [
     ".next/routes-manifest.json",
     ".next/server/pages-manifest.json",
