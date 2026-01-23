@@ -8,10 +8,14 @@ module.exports = {
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'development'
+        NODE_ENV: 'development',
+        PORT: 3000,
+        HOSTNAME: 'localhost'
       },
       env_production: {
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
+        PORT: 3000,
+        HOSTNAME: '0.0.0.0'
       }
     },
     {
@@ -22,10 +26,12 @@ module.exports = {
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'development'
+        NODE_ENV: 'development',
+        USE_TYPESCRIPT: 'true'
       },
       env_production: {
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
+        USE_TYPESCRIPT: 'false'
       }
     }
   ]

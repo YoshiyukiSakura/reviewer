@@ -29,6 +29,8 @@
     "prisma": "^6.19.2",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^1.0.0"
   }
