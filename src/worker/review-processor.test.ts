@@ -176,6 +176,12 @@ describe('ReviewProcessor', () => {
 
   describe('processPR', () => {
     it('should process a PR successfully', async () => {
+      // Add small delay to ensure durationMs > 0
+      mockGetPRDiff.mockImplementation(async () => {
+        await new Promise(resolve => setTimeout(resolve, 1));
+        return sampleDiffResult;
+      });
+
       const processor = new ReviewProcessor();
       const result = await processor.processPR(samplePRParams);
 
@@ -390,7 +396,7 @@ describe('ReviewProcessor', () => {
     it('should continue processing even if one PR fails', async () => {
       mockGetPRDiff
         .mockResolvedValueOnce(sampleDiffResult)
-        .mockResolvedValueOnce({ success: false, error: 'Not found' })
+        .mockResolvedValueOnce({ success: false, error: 'PR not found' })
         .mockResolvedValueOnce(sampleDiffResult);
 
       const processor = new ReviewProcessor();
