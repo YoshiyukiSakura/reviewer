@@ -2,7 +2,6 @@
  * Tests for PR Monitor Module
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   PRMonitor,
   createMonitor,
@@ -15,7 +14,7 @@ import {
 } from '../pr-monitor';
 
 // Mock global fetch
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 // ============================================================================

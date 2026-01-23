@@ -3,7 +3,6 @@
  * Tests for AI Reviewer Module
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   AIReviewer,
   createReviewerFromEnv,
@@ -16,16 +15,16 @@ import {
 } from '../reviewer';
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 describe('AIReviewer', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('constructor', () => {

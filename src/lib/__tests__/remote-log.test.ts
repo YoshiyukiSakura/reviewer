@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   initRemoteLog,
   sendLog,
@@ -14,8 +13,8 @@ describe('remote-log', () => {
 
   beforeEach(() => {
     clearBuffer();
-    vi.useFakeTimers();
-    global.fetch = vi.fn().mockResolvedValue({
+    jest.useFakeTimers();
+    global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -24,8 +23,8 @@ describe('remote-log', () => {
 
   afterEach(async () => {
     await shutdown();
-    vi.useRealTimers();
-    vi.restoreAllMocks();
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   describe('initRemoteLog', () => {
@@ -151,7 +150,7 @@ describe('remote-log', () => {
     });
 
     it('should restore logs to buffer on failure', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
@@ -189,7 +188,8 @@ describe('remote-log', () => {
 
       expect(global.fetch).not.toHaveBeenCalled();
 
-      await vi.advanceTimersByTimeAsync(5000);
+      jest.advanceTimersByTime(5000);
+      await Promise.resolve();
 
       expect(global.fetch).toHaveBeenCalledTimes(1);
     });
