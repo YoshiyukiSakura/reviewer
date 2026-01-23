@@ -99,3 +99,40 @@ export interface PaginatedResponse<T> {
   pageSize: number
   totalPages: number
 }
+
+// AI Review Configuration Types
+export type ReviewType = 'comprehensive' | 'security' | 'performance' | 'focused'
+
+export type AIProvider = 'openai' | 'anthropic' | 'azure-openai'
+
+export type AIModel =
+  // OpenAI models
+  | 'gpt-4'
+  | 'gpt-4-turbo'
+  | 'gpt-4o'
+  | 'gpt-4o-mini'
+  | 'gpt-3.5-turbo'
+  // Anthropic models
+  | 'claude-3-opus'
+  | 'claude-3-sonnet'
+  | 'claude-3-haiku'
+  | 'claude-3-5-sonnet'
+  | 'claude-3-5-haiku'
+
+// Review Configuration
+export interface ReviewConfig {
+  reviewType: ReviewType
+  aiProvider: AIProvider
+  aiModel: AIModel
+  focusAreas?: string[]
+}
+
+// Extended UpdateReviewRequest with configuration
+export interface UpdateReviewConfigRequest extends UpdateReviewRequest {
+  config?: ReviewConfig
+}
+
+// Re-trigger review request
+export interface RetriggerReviewRequest {
+  config?: ReviewConfig
+}
