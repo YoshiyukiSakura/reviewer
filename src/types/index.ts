@@ -2,16 +2,17 @@
  * Core type definitions for the Reviewer application
  */
 
-// Review status enum
+// Review status enum (matches Prisma schema)
 export type ReviewStatus =
   | 'PENDING'
   | 'IN_PROGRESS'
   | 'APPROVED'
+  | 'REJECTED'
   | 'CHANGES_REQUESTED'
   | 'CLOSED'
 
-// Comment severity enum
-export type CommentSeverity = 'INFO' | 'SUGGESTION' | 'WARNING' | 'CRITICAL'
+// Comment severity enum (matches Prisma schema)
+export type CommentSeverity = 'INFO' | 'SUGGESTION' | 'WARNING' | 'ERROR' | 'CRITICAL'
 
 // Review source type
 export type ReviewSourceType = 'pull_request' | 'commit' | 'file'

@@ -3,8 +3,17 @@
   "pages404": true,
   "appType": "app",
   "caseSensitive": false,
-  "basePath": "",
+  "basePath": "/reviewer",
   "redirects": [
+    {
+      "source": "/reviewer/",
+      "destination": "/reviewer",
+      "basePath": false,
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^/reviewer/$"
+    },
     {
       "source": "/:path+/",
       "destination": "/:path+",
@@ -20,7 +29,32 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [],
+  "dynamicRoutes": [
+    {
+      "page": "/api/reviews/[id]",
+      "regex": "^/api/reviews/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/reviews/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/reviews/[id]/diff",
+      "regex": "^/api/reviews/([^/]+?)/diff(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/reviews/(?<nxtPid>[^/]+?)/diff(?:/)?$"
+    },
+    {
+      "page": "/reviews/[id]",
+      "regex": "^/reviews/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/reviews/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
   "staticRoutes": [
     {
       "page": "/",

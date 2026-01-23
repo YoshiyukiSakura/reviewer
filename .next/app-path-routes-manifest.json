@@ -1,6 +1,9 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
+  "/api/reviews/[id]/diff/route": "/api/reviews/[id]/diff",
+  "/api/reviews/[id]/route": "/api/reviews/[id]",
   "/favicon.ico/route": "/favicon.ico",
-  "/page": "/"
+  "/page": "/",
+  "/reviews/[id]/page": "/reviews/[id]"
 }

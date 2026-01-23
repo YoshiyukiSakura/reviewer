@@ -1,6 +1,9 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/reviews/[id]/diff/route": "app/api/reviews/[id]/diff/route.js",
+  "/api/reviews/[id]/route": "app/api/reviews/[id]/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/reviews/[id]/page": "app/reviews/[id]/page.js"
 }
