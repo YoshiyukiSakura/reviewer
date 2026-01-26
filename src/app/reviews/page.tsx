@@ -281,7 +281,7 @@ export default function ReviewsListPage() {
   // Reset page when filters change
   const handleFilterChange = useCallback(() => {
     setPage(1)
-  }, [search, statusFilter, sortBy, sortOrder])
+  }, [setPage])
 
   // Clear all filters
   const handleClearFilters = useCallback(() => {
