@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   useReview,
   useReviewComments,
@@ -269,6 +270,7 @@ export default function ReviewDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const router = useRouter()
   const { id } = use(params)
   const { user } = useAuth()
 
@@ -313,8 +315,8 @@ export default function ReviewDetailPage({
   }, [refetchComments, refetchReview])
 
   const handleBack = useCallback(() => {
-    window.history.back()
-  }, [])
+    router.back()
+  }, [router])
 
   const commentStats = useMemo(() => {
     const total = comments.length
