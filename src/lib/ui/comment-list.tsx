@@ -115,7 +115,6 @@ function CommentItem({
   const canNest = depth < maxDepth
   const isResolving = resolvingCommentId === comment.id
 
-  const indentClass = depth > 0 ? `ml-${Math.min(depth * 4, 12)}` : ''
   const borderClass = depth > 0 ? 'border-l-2 border-muted pl-4' : ''
 
   return (
