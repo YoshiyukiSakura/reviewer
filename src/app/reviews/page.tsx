@@ -238,7 +238,11 @@ function ReviewsTableSkeleton() {
 /**
  * Empty state component
  */
-function EmptyState() {
+interface EmptyStateProps {
+  onClearFilters: () => void
+}
+
+function EmptyState({ onClearFilters }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -248,12 +252,7 @@ function EmptyState() {
       <p className="text-muted-foreground mb-4">
         Try adjusting your search or filter criteria
       </p>
-      <Button
-        variant="outline"
-        onClick={() => {
-          window.location.reload()
-        }}
-      >
+      <Button variant="outline" onClick={onClearFilters}>
         Clear Filters
       </Button>
     </div>
@@ -283,6 +282,15 @@ export default function ReviewsListPage() {
   const handleFilterChange = useCallback(() => {
     setPage(1)
   }, [search, statusFilter, sortBy, sortOrder])
+
+  // Clear all filters
+  const handleClearFilters = useCallback(() => {
+    setSearch('')
+    setStatusFilter('')
+    setSortBy('createdAt')
+    setSortOrder('desc')
+    setPage(1)
+  }, [])
 
   // Apply filters
   const filters: ReviewFilterParams = useMemo(
@@ -431,7 +439,7 @@ export default function ReviewsListPage() {
           {isLoading ? (
             <ReviewsTableSkeleton />
           ) : reviews.length === 0 ? (
-            <EmptyState />
+            <EmptyState onClearFilters={handleClearFilters} />
           ) : (
             <>
               <Table
