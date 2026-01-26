@@ -3,6 +3,10 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 export interface TokenPayload extends JWTPayload {
   userId: string
   email?: string
+  name?: string
+  avatarUrl?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type VerifyResult = {
