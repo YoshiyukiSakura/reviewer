@@ -93,3 +93,46 @@ enum CommentSeverity {
   ERROR
   CRITICAL
 }
+
+// User model - represents a registered user
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  password     String?
+  avatarUrl    String?
+  bio          String?
+  slackUserId  String?   @unique
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  notificationSettings NotificationSettings?
+
+  @@index([email])
+}
+
+// NotificationSettings model - stores user notification preferences
+model NotificationSettings {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // General notifications
+  emailNotifications  Boolean  @default(true)
+  pushNotifications   Boolean  @default(true)
+
+  // Review notifications
+  reviewAssignments   Boolean  @default(true)
+  reviewComments      Boolean  @default(true)
+  reviewStatusChanges Boolean  @default(true)
+
+  // Digest
+  weeklyDigest        Boolean  @default(false)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userId])
+}

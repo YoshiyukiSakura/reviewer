@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { signToken, verifyToken, decodeToken } from '../auth'
 
 const TEST_SECRET = 'test-secret-key-for-testing-purposes-only-32chars'
