@@ -13,6 +13,7 @@ import { Table, type Column } from '@/lib/ui/table'
 import { Badge } from '@/lib/ui/badge'
 import { Button } from '@/lib/ui/button'
 import { Input } from '@/lib/ui/input'
+import { ErrorBoundary } from '@/lib/ui'
 import { Search, FileText } from 'lucide-react'
 import type { Review, ReviewFilterParams, ReviewStatus, PaginatedResponse } from '@/types'
 
@@ -415,59 +416,61 @@ export default function ReviewsListPage() {
           <CardTitle>All Reviews</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Filter bar */}
-          <FilterBar
-            search={search}
-            onSearchChange={(value) => {
-              setSearch(value)
-              handleFilterChange()
-            }}
-            statusFilter={statusFilter}
-            onStatusFilterChange={(value) => {
-              setStatusFilter(value)
-              handleFilterChange()
-            }}
-            sortBy={sortBy}
-            onSortByChange={(value) => {
-              setSortBy(value)
-              handleFilterChange()
-            }}
-            sortOrder={sortOrder}
-            onSortOrderChange={(value) => {
-              setSortOrder(value)
-              handleFilterChange()
-            }}
-          />
+          <ErrorBoundary>
+            {/* Filter bar */}
+            <FilterBar
+              search={search}
+              onSearchChange={(value) => {
+                setSearch(value)
+                handleFilterChange()
+              }}
+              statusFilter={statusFilter}
+              onStatusFilterChange={(value) => {
+                setStatusFilter(value)
+                handleFilterChange()
+              }}
+              sortBy={sortBy}
+              onSortByChange={(value) => {
+                setSortBy(value)
+                handleFilterChange()
+              }}
+              sortOrder={sortOrder}
+              onSortOrderChange={(value) => {
+                setSortOrder(value)
+                handleFilterChange()
+              }}
+            />
 
-          {/* Table or loading/empty state */}
-          {isLoading ? (
-            <ReviewsTableSkeleton />
-          ) : reviews.length === 0 ? (
-            <EmptyState onClearFilters={handleClearFilters} />
-          ) : (
-            <>
-              <Table
-                columns={columns}
-                data={reviews}
-                rowKey="id"
-                onRowClick={handleRowClick}
-                hoverable
-                size="default"
-              />
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Showing {reviews.length} reviews
-                </p>
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
+            {/* Table or loading/empty state */}
+            {isLoading ? (
+              <ReviewsTableSkeleton />
+            ) : reviews.length === 0 ? (
+              <EmptyState onClearFilters={handleClearFilters} />
+            ) : (
+              <>
+                <Table
+                  columns={columns}
+                  data={reviews}
+                  rowKey="id"
+                  onRowClick={handleRowClick}
+                  hoverable
+                  size="default"
                 />
-              </div>
-            </>
-          )}
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {reviews.length} reviews
+                  </p>
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                  />
+                </div>
+              </>
+            )}
+          </ErrorBoundary>
         </CardContent>
       </Card>
     </div>

@@ -11,6 +11,7 @@ import {
 } from '@/lib/ui'
 import { StatsChart } from '@/lib/ui'
 import { Badge } from '@/lib/ui'
+import { ErrorBoundary } from '@/lib/ui'
 import { BarChart3, FileText, Clock, CheckCircle, MessageCircle } from 'lucide-react'
 import type { Review, DashboardStats } from '@/types'
 
@@ -309,64 +310,66 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Summary stat cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        {isLoading ? (
-          <>
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </>
-        ) : (
-          <>
-            <StatCard
-              label="Total Reviews"
-              value={totalReviews}
-              description="All time reviews"
-              icon={<FileText className="h-6 w-6" />}
-              color="#3b82f6"
-            />
-            <StatCard
-              label="Pending Reviews"
-              value={pendingReviews}
-              description="Awaiting review"
-              icon={<Clock className="h-6 w-6" />}
-              color="#f59e0b"
-            />
-            <StatCard
-              label="Approved"
-              value={approvedReviews}
-              description="Successfully approved"
-              icon={<CheckCircle className="h-6 w-6" />}
-              color="#22c55e"
-            />
-            <StatCard
-              label="Unresolved Comments"
-              value={unresolvedComments}
-              description="Need attention"
-              icon={<MessageCircle className="h-6 w-6" />}
-              color="#ef4444"
-            />
-          </>
-        )}
-      </div>
-
-      {/* Overview charts */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold tracking-tight mb-4">Overview</h2>
-        <OverviewCharts stats={dashboardStats} isLoading={statsLoading} />
-      </div>
-
-      {/* Activity chart and recent activity */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ActivityChart activityData={activityData} isLoading={activityLoading} />
+      <ErrorBoundary>
+        {/* Summary stat cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          {isLoading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <StatCard
+                label="Total Reviews"
+                value={totalReviews}
+                description="All time reviews"
+                icon={<FileText className="h-6 w-6" />}
+                color="#3b82f6"
+              />
+              <StatCard
+                label="Pending Reviews"
+                value={pendingReviews}
+                description="Awaiting review"
+                icon={<Clock className="h-6 w-6" />}
+                color="#f59e0b"
+              />
+              <StatCard
+                label="Approved"
+                value={approvedReviews}
+                description="Successfully approved"
+                icon={<CheckCircle className="h-6 w-6" />}
+                color="#22c55e"
+              />
+              <StatCard
+                label="Unresolved Comments"
+                value={unresolvedComments}
+                description="Need attention"
+                icon={<MessageCircle className="h-6 w-6" />}
+                color="#ef4444"
+              />
+            </>
+          )}
         </div>
-        <div>
-          <RecentActivity reviews={reviews} isLoading={reviewsLoading} />
+
+        {/* Overview charts */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold tracking-tight mb-4">Overview</h2>
+          <OverviewCharts stats={dashboardStats} isLoading={statsLoading} />
         </div>
-      </div>
+
+        {/* Activity chart and recent activity */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <ActivityChart activityData={activityData} isLoading={activityLoading} />
+          </div>
+          <div>
+            <RecentActivity reviews={reviews} isLoading={reviewsLoading} />
+          </div>
+        </div>
+      </ErrorBoundary>
     </div>
   )
 }

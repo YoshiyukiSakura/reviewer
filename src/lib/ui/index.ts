@@ -70,3 +70,6 @@ export { Header, default as HeaderDefault, defaultNavItems, type HeaderProps, ty
 
 // Sidebar
 export { Sidebar, SidebarOverlay, default as SidebarDefault, defaultSidebarItems, type SidebarProps, type SidebarItem } from './sidebar'
+
+// ErrorBoundary
+export { ErrorBoundary, default as ErrorBoundaryDefault, type ErrorBoundaryProps } from './error-boundary'

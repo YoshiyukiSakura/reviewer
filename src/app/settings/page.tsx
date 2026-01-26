@@ -16,6 +16,7 @@ import {
 } from '@/lib/ui'
 import { Button } from '@/lib/ui/button'
 import { Input } from '@/lib/ui/input'
+import { ErrorBoundary } from '@/lib/ui'
 import { User, Bell, Lock } from 'lucide-react'
 
 /**
@@ -565,26 +566,28 @@ export default function SettingsPage() {
               )}
             </CardHeader>
             <CardContent>
-              {activeTab === 'profile' && (
-                <ProfileSettings
-                  user={user}
-                  onSave={handleProfileSave}
-                  isSaving={isSaving}
-                />
-              )}
-              {activeTab === 'notifications' && (
-                <NotificationSettings
-                  settings={notificationSettings}
-                  onSave={handleNotificationSave}
-                  isSaving={isSaving}
-                />
-              )}
-              {activeTab === 'security' && (
-                <SecuritySettings
-                  onPasswordChange={handlePasswordChange}
-                  isSaving={isSaving}
-                />
-              )}
+              <ErrorBoundary>
+                {activeTab === 'profile' && (
+                  <ProfileSettings
+                    user={user}
+                    onSave={handleProfileSave}
+                    isSaving={isSaving}
+                  />
+                )}
+                {activeTab === 'notifications' && (
+                  <NotificationSettings
+                    settings={notificationSettings}
+                    onSave={handleNotificationSave}
+                    isSaving={isSaving}
+                  />
+                )}
+                {activeTab === 'security' && (
+                  <SecuritySettings
+                    onPasswordChange={handlePasswordChange}
+                    isSaving={isSaving}
+                  />
+                )}
+              </ErrorBoundary>
             </CardContent>
           </Card>
         </div>
