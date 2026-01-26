@@ -13,6 +13,7 @@ import { Table, type Column } from '@/lib/ui/table'
 import { Badge } from '@/lib/ui/badge'
 import { Button } from '@/lib/ui/button'
 import { Input } from '@/lib/ui/input'
+import { Search, FileText } from 'lucide-react'
 import type { Review, ReviewFilterParams, ReviewStatus, PaginatedResponse } from '@/types'
 
 /**
@@ -82,7 +83,7 @@ function FilterBar({
           placeholder="Search reviews..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          leftAddon="🔍"
+          leftAddon={<Search className="h-4 w-4" />}
         />
       </div>
 
@@ -247,7 +248,7 @@ function EmptyState({ onClearFilters }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-        <span className="text-3xl">📋</span>
+        <FileText className="h-8 w-8 text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold mb-2">No reviews found</h3>
       <p className="text-muted-foreground mb-4">

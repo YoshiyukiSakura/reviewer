@@ -11,6 +11,7 @@ import {
 } from '@/lib/ui'
 import { StatsChart } from '@/lib/ui'
 import { Badge } from '@/lib/ui'
+import { BarChart3, FileText, Clock, CheckCircle, MessageCircle } from 'lucide-react'
 import type { Review, DashboardStats } from '@/types'
 
 /**
@@ -51,7 +52,7 @@ function StatCard({ label, value, description, trend, trendValue, icon, color = 
             className="w-12 h-12 rounded-lg flex items-center justify-center"
             style={{ backgroundColor: `${color}15` }}
           >
-            {icon || <span className="text-2xl" style={{ color }}>📊</span>}
+            {icon || <BarChart3 className="h-6 w-6" style={{ color }} />}
           </div>
         </div>
       </CardContent>
@@ -323,28 +324,28 @@ export default function DashboardPage() {
               label="Total Reviews"
               value={totalReviews}
               description="All time reviews"
-              icon={<span className="text-2xl">📋</span>}
+              icon={<FileText className="h-6 w-6" />}
               color="#3b82f6"
             />
             <StatCard
               label="Pending Reviews"
               value={pendingReviews}
               description="Awaiting review"
-              icon={<span className="text-2xl">⏳</span>}
+              icon={<Clock className="h-6 w-6" />}
               color="#f59e0b"
             />
             <StatCard
               label="Approved"
               value={approvedReviews}
               description="Successfully approved"
-              icon={<span className="text-2xl">✅</span>}
+              icon={<CheckCircle className="h-6 w-6" />}
               color="#22c55e"
             />
             <StatCard
               label="Unresolved Comments"
               value={unresolvedComments}
               description="Need attention"
-              icon={<span className="text-2xl">💬</span>}
+              icon={<MessageCircle className="h-6 w-6" />}
               color="#ef4444"
             />
           </>

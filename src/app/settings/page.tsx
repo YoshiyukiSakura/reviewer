@@ -16,6 +16,7 @@ import {
 } from '@/lib/ui'
 import { Button } from '@/lib/ui/button'
 import { Input } from '@/lib/ui/input'
+import { User, Bell, Lock } from 'lucide-react'
 
 /**
  * Tab type for settings sections
@@ -503,10 +504,10 @@ export default function SettingsPage() {
     }
   }, [])
 
-  const tabs: { id: SettingsTab; label: string; icon: string }[] = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'security', label: 'Security', icon: '🔒' },
+  const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
+    { id: 'notifications', label: 'Notifications', icon: <Bell className="h-4 w-4" /> },
+    { id: 'security', label: 'Security', icon: <Lock className="h-4 w-4" /> },
   ]
 
   return (
@@ -533,7 +534,7 @@ export default function SettingsPage() {
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
-                <span>{tab.icon}</span>
+                {tab.icon}
                 {tab.label}
               </button>
             ))}
