@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import {
   useDataFetch,
   usePaginatedDataFetch,
@@ -178,6 +178,3 @@ export function useReviewStatus(): UseReviewStatusResult {
     error,
   }
 }
-
-// Import useState for the hook above
-import { useState } from 'react'
