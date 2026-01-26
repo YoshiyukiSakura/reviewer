@@ -121,3 +121,61 @@ export interface AuthResponse {
   user: User
   token: string
 }
+
+// Stats types for dashboard
+export interface ReviewStats {
+  total: number
+  pending: number
+  inProgress: number
+  approved: number
+  changesRequested: number
+  closed: number
+}
+
+export interface CommentStats {
+  total: number
+  unresolved: number
+  bySeverity: {
+    info: number
+    suggestion: number
+    warning: number
+    critical: number
+  }
+}
+
+export interface DashboardStats {
+  reviews: ReviewStats
+  comments: CommentStats
+  activityOverTime: Array<{
+    date: string
+    reviews: number
+    comments: number
+  }>
+}
+
+// Pagination params
+export interface PaginationParams {
+  page?: number
+  pageSize?: number
+}
+
+// Sort params
+export interface SortParams {
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+// Filter params for reviews
+export interface ReviewFilterParams extends PaginationParams, SortParams {
+  status?: ReviewStatus
+  authorId?: string
+  search?: string
+}
+
+// Filter params for comments
+export interface CommentFilterParams extends PaginationParams, SortParams {
+  reviewId?: string
+  isResolved?: boolean
+  severity?: CommentSeverity
+  authorId?: string
+}
