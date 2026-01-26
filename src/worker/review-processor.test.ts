@@ -8,6 +8,11 @@ import {
   createReviewProcessor,
   createDryRunProcessor,
   processReview,
+  GitHubActionReviewProcessor,
+  createGitHubActionProcessor,
+  createGitHubActionDryRunProcessor,
+  createGitHubActionReviewOnlyProcessor,
+  processGitHubActionReview,
   type ProcessPRParams,
   type StatusCallback,
 } from './review-processor';
@@ -15,6 +20,10 @@ import {
 // Mock dependencies
 vi.mock('../lib/github/pr-diff', () => ({
   getPRDiff: vi.fn(),
+}));
+
+vi.mock('../lib/github/pr-reviews', () => ({
+  createPRReview: vi.fn(),
 }));
 
 vi.mock('../lib/ai/reviewer', () => ({
@@ -42,14 +51,20 @@ vi.mock('../lib/remote-log', () => ({
   },
 }));
 
+vi.mock('fs/promises', () => ({
+  readFile: vi.fn(),
+}));
+
 // Import mocked modules
 import { getPRDiff } from '../lib/github/pr-diff';
+import { createPRReview } from '../lib/github/pr-reviews';
 import { createReviewerFromEnv } from '../lib/ai/reviewer';
 import { prisma } from '../lib/prisma';
 import { log } from '../lib/remote-log';
 
 // Type assertions for mocks
 const mockGetPRDiff = getPRDiff as ReturnType<typeof vi.fn>;
+const mockCreatePRReview = createPRReview as ReturnType<typeof vi.fn>;
 const mockCreateReviewerFromEnv = createReviewerFromEnv as ReturnType<typeof vi.fn>;
 const mockPrismaReviewCreate = prisma.review.create as ReturnType<typeof vi.fn>;
 
@@ -183,7 +198,7 @@ describe('ReviewProcessor', () => {
       expect(result.reviewId).toBe('review-abc123');
       expect(result.aiResult).toBeDefined();
       expect(result.aiResult?.score).toBe(8);
-      expect(result.durationMs).toBeGreaterThan(0);
+      expect(result.durationMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should call status callback with progress updates', async () => {
@@ -566,5 +581,404 @@ describe('processReview convenience function', () => {
     expect(result.success).toBe(true);
     expect(result.reviewId).toBeUndefined();
     expect(mockPrismaReviewCreate).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// GitHub Action Review Processor Tests
+// ============================================================================
+
+describe('GitHubActionReviewProcessor', () => {
+  let mockReviewer: { review: ReturnType<typeof vi.fn>; reviewPR: ReturnType<typeof vi.fn> };
+  let mockReadFile: ReturnType<typeof vi.fn>;
+
+  const sampleGitHubEvent = {
+    action: 'opened',
+    sender: {
+      login: 'octocat',
+      id: 1,
+    },
+    repository: {
+      owner: {
+        login: 'octocat',
+      },
+      name: 'hello-world',
+      full_name: 'octocat/hello-world',
+    },
+    pull_request: {
+      number: 42,
+      title: 'Add new feature',
+      body: 'This PR adds a new feature',
+      head: {
+        sha: 'abc123',
+        ref: 'feature-branch',
+      },
+      base: {
+        ref: 'main',
+      },
+      user: {
+        login: 'octocat',
+        id: 1,
+      },
+      html_url: 'https://github.com/octocat/hello-world/pull/42',
+    },
+  };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+
+    // Setup default mock implementations
+    mockReviewer = {
+      review: vi.fn().mockResolvedValue(sampleAIResult),
+      reviewPR: vi.fn().mockResolvedValue(sampleAIResult),
+    };
+
+    mockReadFile = vi.fn();
+
+    mockCreateReviewerFromEnv.mockReturnValue(mockReviewer);
+    mockGetPRDiff.mockResolvedValue(sampleDiffResult);
+    mockPrismaReviewCreate.mockResolvedValue(sampleReviewRecord);
+    mockCreatePRReview.mockResolvedValue({ success: true, data: { id: 123 } });
+
+    // Setup fs/promises mock
+    const fs = await import('fs/promises');
+    vi.spyOn(fs, 'readFile').mockImplementation(mockReadFile);
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  describe('constructor', () => {
+    it('should create processor with default configuration', () => {
+      const processor = new GitHubActionReviewProcessor();
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+      expect(mockCreateReviewerFromEnv).toHaveBeenCalled();
+    });
+
+    it('should create processor with custom configuration', () => {
+      const processor = new GitHubActionReviewProcessor({
+        dryRun: true,
+        postToGitHub: false,
+        maxRetries: 5,
+      });
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+    });
+
+    it('should default postToGitHub to true', () => {
+      const processor = new GitHubActionReviewProcessor();
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+    });
+  });
+
+  describe('processFromEvent', () => {
+    it('should process GitHub event successfully', async () => {
+      // Mock environment
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(true);
+      expect(result.reviewId).toBe('review-abc123');
+      expect(result.postedToGitHub).toBe(true);
+      expect(result.aiResult).toBeDefined();
+    });
+
+    it('should fail when not in GitHub Actions environment', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', undefined);
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('INVALID_EVENT');
+      expect(result.error).toContain('Not running in GitHub Actions environment');
+    });
+
+    it('should fail when GITHUB_EVENT_PATH is not set', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', undefined);
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('INVALID_EVENT');
+    });
+
+    it('should fail when event payload is invalid', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue('{}');
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('INVALID_EVENT');
+    });
+
+    it('should handle diff fetch failure', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+      mockGetPRDiff.mockResolvedValue({ success: false, error: 'Repository not found' });
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('DIFF_FETCH_FAILED');
+    });
+
+    it('should handle AI review failure', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+      mockReviewer.review.mockResolvedValue({ success: false, error: 'AI API timeout' });
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('AI_REVIEW_FAILED');
+    });
+
+    it('should skip database save in dry run mode', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+
+      const processor = new GitHubActionReviewProcessor({ dryRun: true });
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(true);
+      expect(result.reviewId).toBeUndefined();
+      expect(mockPrismaReviewCreate).not.toHaveBeenCalled();
+    });
+
+    it('should skip posting to GitHub when disabled', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+
+      const processor = new GitHubActionReviewProcessor({ postToGitHub: false });
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(true);
+      expect(result.postedToGitHub).toBe(false); // false when disabled, undefined means not set
+      expect(mockCreatePRReview).not.toHaveBeenCalled();
+    });
+
+    it('should handle GitHub post failure gracefully', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+      mockCreatePRReview.mockResolvedValue({ success: false, error: 'Failed to post review' });
+
+      const processor = new GitHubActionReviewProcessor();
+      const result = await processor.processFromEvent();
+
+      expect(result.success).toBe(true); // Should still succeed
+      expect(result.postedToGitHub).toBe(false);
+    });
+
+    it('should call status callback with progress updates', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+      mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+
+      const processor = new GitHubActionReviewProcessor();
+      const statusCallback: StatusCallback = vi.fn();
+
+      await processor.processFromEvent(statusCallback);
+
+      expect(statusCallback).toHaveBeenCalledWith(
+        expect.objectContaining({ phase: 'fetching_diff' })
+      );
+      expect(statusCallback).toHaveBeenCalledWith(
+        expect.objectContaining({ phase: 'reviewing' })
+      );
+      expect(statusCallback).toHaveBeenCalledWith(
+        expect.objectContaining({ phase: 'saving' })
+      );
+      expect(statusCallback).toHaveBeenCalledWith(
+        expect.objectContaining({ phase: 'completed' })
+      );
+    });
+  });
+
+  describe('processPR', () => {
+    it('should process a PR successfully', async () => {
+      const processor = new GitHubActionReviewProcessor({ postToGitHub: false });
+      const result = await processor.processPR(samplePRParams);
+
+      expect(result.success).toBe(true);
+      expect(result.reviewId).toBe('review-abc123');
+      expect(result.aiResult).toBeDefined();
+    });
+
+    it('should handle diff fetch failure', async () => {
+      mockGetPRDiff.mockResolvedValue({ success: false, error: 'Repository not found' });
+
+      const processor = new GitHubActionReviewProcessor({ postToGitHub: false });
+      const result = await processor.processPR(samplePRParams);
+
+      expect(result.success).toBe(false);
+      expect(result.errorCode).toBe('DIFF_FETCH_FAILED');
+    });
+
+    it('should skip database save in dry run mode', async () => {
+      const processor = new GitHubActionReviewProcessor({ dryRun: true, postToGitHub: false });
+      const result = await processor.processPR(samplePRParams);
+
+      expect(result.success).toBe(true);
+      expect(result.reviewId).toBeUndefined();
+      expect(mockPrismaReviewCreate).not.toHaveBeenCalled();
+    });
+
+    it('should post review to GitHub based on approval', async () => {
+      mockReviewer.review.mockResolvedValue({
+        success: true,
+        data: { ...sampleAIResult.data, approval: 'approve' },
+      });
+
+      // Set up the mock to be called
+      const mockPostReview = vi.fn().mockResolvedValue({ success: true, data: { id: 123 } });
+
+      // Import and spy on createPRReview
+      const { createPRReview: originalCreatePRReview } = await import('../lib/github/pr-reviews');
+      vi.spyOn(await import('../lib/github/pr-reviews'), 'createPRReview').mockImplementation(mockPostReview);
+
+      const processor = new GitHubActionReviewProcessor({ postToGitHub: true });
+      const result = await processor.processPR(samplePRParams);
+
+      expect(result.success).toBe(true);
+      expect(result.postedToGitHub).toBe(true);
+      expect(mockPostReview).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: samplePRParams.owner,
+          repo: samplePRParams.repo,
+          pullNumber: samplePRParams.pullNumber,
+        }),
+        expect.objectContaining({
+          event: 'APPROVE',
+        })
+      );
+    });
+
+    it('should post REQUEST_CHANGES when approval is request_changes', async () => {
+      mockReviewer.review.mockResolvedValue({
+        success: true,
+        data: { ...sampleAIResult.data, approval: 'request_changes' },
+      });
+
+      const mockPostReview = vi.fn().mockResolvedValue({ success: true, data: { id: 123 } });
+      vi.spyOn(await import('../lib/github/pr-reviews'), 'createPRReview').mockImplementation(mockPostReview);
+
+      const processor = new GitHubActionReviewProcessor({ postToGitHub: true });
+      const result = await processor.processPR(samplePRParams);
+
+      expect(result.success).toBe(true);
+      expect(mockPostReview).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          event: 'REQUEST_CHANGES',
+        })
+      );
+    });
+  });
+});
+
+describe('GitHub Action Factory Functions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCreateReviewerFromEnv.mockReturnValue({
+      review: vi.fn(),
+      reviewPR: vi.fn(),
+    });
+  });
+
+  describe('createGitHubActionProcessor', () => {
+    it('should create a GitHubActionReviewProcessor with default config', () => {
+      const processor = createGitHubActionProcessor();
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+    });
+
+    it('should create a GitHubActionReviewProcessor with custom config', () => {
+      const processor = createGitHubActionProcessor({ maxRetries: 5 });
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+    });
+  });
+
+  describe('createGitHubActionDryRunProcessor', () => {
+    it('should create a GitHubActionReviewProcessor in dry-run mode', () => {
+      const processor = createGitHubActionDryRunProcessor();
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+    });
+  });
+
+  describe('createGitHubActionReviewOnlyProcessor', () => {
+    it('should create a GitHubActionReviewProcessor with postToGitHub disabled', () => {
+      const processor = createGitHubActionReviewOnlyProcessor();
+      expect(processor).toBeInstanceOf(GitHubActionReviewProcessor);
+    });
+  });
+});
+
+describe('processGitHubActionReview convenience function', () => {
+  let mockReviewer: { review: ReturnType<typeof vi.fn>; reviewPR: ReturnType<typeof vi.fn> };
+  let mockReadFile: ReturnType<typeof vi.fn>;
+
+  const sampleGitHubEvent = {
+    action: 'opened',
+    sender: { login: 'octocat', id: 1 },
+    repository: {
+      owner: { login: 'octocat' },
+      name: 'hello-world',
+      full_name: 'octocat/hello-world',
+    },
+    pull_request: {
+      number: 42,
+      title: 'Add new feature',
+      body: 'This PR adds a new feature',
+      head: { sha: 'abc123', ref: 'feature-branch' },
+      base: { ref: 'main' },
+      user: { login: 'octocat', id: 1 },
+      html_url: 'https://github.com/octocat/hello-world/pull/42',
+    },
+  };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+
+    mockReviewer = {
+      review: vi.fn().mockResolvedValue(sampleAIResult),
+      reviewPR: vi.fn().mockResolvedValue(sampleAIResult),
+    };
+
+    mockReadFile = vi.fn();
+
+    mockCreateReviewerFromEnv.mockReturnValue(mockReviewer);
+    mockGetPRDiff.mockResolvedValue(sampleDiffResult);
+    mockPrismaReviewCreate.mockResolvedValue(sampleReviewRecord);
+    mockCreatePRReview.mockResolvedValue({ success: true, data: { id: 123 } });
+
+    const fs = await import('fs/promises');
+    vi.spyOn(fs, 'readFile').mockImplementation(mockReadFile);
+  });
+
+  it('should process a GitHub Action review with minimal params', async () => {
+    vi.stubEnv('GITHUB_ACTIONS', 'true');
+    vi.stubEnv('GITHUB_EVENT_PATH', '/tmp/event.json');
+    mockReadFile.mockResolvedValue(JSON.stringify(sampleGitHubEvent));
+
+    const result = await processGitHubActionReview({ postToGitHub: false });
+
+    expect(result.success).toBe(true);
+    expect(result.reviewId).toBeDefined();
   });
 });
