@@ -99,3 +99,25 @@ export interface PaginatedResponse<T> {
   pageSize: number
   totalPages: number
 }
+
+// User type for authentication
+export interface User {
+  id: string
+  email?: string
+  name?: string
+  avatarUrl?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Login credentials
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+// Auth response from API
+export interface AuthResponse {
+  user: User
+  token: string
+}
