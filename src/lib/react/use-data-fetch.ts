@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { axiosInstance, HttpError } from '@/lib/http'
 
 /**
@@ -41,10 +41,11 @@ export function useDataFetch<T>(
   const [isLoading, setIsLoading] = useState(immediate)
   const [error, setError] = useState<HttpError | null>(null)
   const [isRefetching, setIsRefetching] = useState(false)
+  const hasDataRef = useRef(false)
 
   const fetchData = useCallback(async () => {
     try {
-      if (!isLoading && data !== null) {
+      if (hasDataRef.current) {
         setIsRefetching(true)
       }
       setIsLoading(true)
@@ -54,6 +55,7 @@ export function useDataFetch<T>(
       const result = select ? select(response.data) : response.data
 
       setData(result)
+      hasDataRef.current = true
       onSuccess?.(result)
       return result
     } catch (err) {
@@ -68,7 +70,7 @@ export function useDataFetch<T>(
       setIsLoading(false)
       setIsRefetching(false)
     }
-  }, [url, select, onSuccess, onError, isLoading, data])
+  }, [url, select, onSuccess, onError])
 
   useEffect(() => {
     if (immediate) {
