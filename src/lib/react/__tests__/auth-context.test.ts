@@ -2,12 +2,13 @@ import { AuthProvider, useAuth, AuthContext } from '../auth-context'
 import { setAuthToken, getAuthToken } from '@/lib/http/client'
 import { signToken } from '@/lib/auth'
 import type { ReactNode } from 'react'
+import { vi, describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 
 const TEST_SECRET = 'test-secret-key-for-testing-purposes-only-32chars'
 
 // Mock next/cache to prevent issues with dynamic imports
-jest.mock('next/cache', () => ({
-  ...jest.requireActual('next/cache'),
+vi.mock('next/cache', () => ({
+  ...vi.requireActual('next/cache'),
 }))
 
 describe('auth-context', () => {
@@ -82,17 +83,21 @@ describe('auth-context', () => {
         user: null,
         isAuthenticated: false,
         isLoading: true,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshUser: jest.fn(),
+        error: null,
+        login: vi.fn(),
+        logout: vi.fn(),
+        refreshUser: vi.fn(),
+        clearError: vi.fn(),
       }
 
       expect(contextValue.user).toBeNull()
       expect(contextValue.isAuthenticated).toBe(false)
       expect(contextValue.isLoading).toBe(true)
+      expect(contextValue.error).toBeNull()
       expect(typeof contextValue.login).toBe('function')
       expect(typeof contextValue.logout).toBe('function')
       expect(typeof contextValue.refreshUser).toBe('function')
+      expect(typeof contextValue.clearError).toBe('function')
     })
   })
 
