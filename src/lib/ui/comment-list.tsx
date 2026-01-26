@@ -46,6 +46,10 @@ export interface CommentListProps extends Omit<HTMLAttributes<HTMLDivElement>, '
    * Custom empty state content
    */
   emptyState?: React.ReactNode
+  /**
+   * ID of comment currently being resolved (for loading state)
+   */
+  resolvingCommentId?: string | null
 }
 
 /**
@@ -93,6 +97,7 @@ interface CommentItemProps {
   onResolve?: (commentId: string, resolved: boolean) => void
   onClick?: (comment: ReviewComment) => void
   showResolveButton?: boolean
+  resolvingCommentId?: string | null
 }
 
 function CommentItem({
@@ -104,9 +109,11 @@ function CommentItem({
   onResolve,
   onClick,
   showResolveButton = false,
+  resolvingCommentId = null,
 }: CommentItemProps) {
   const hasReplies = comment.replies && comment.replies.length > 0
   const canNest = depth < maxDepth
+  const isResolving = resolvingCommentId === comment.id
 
   const indentClass = depth > 0 ? `ml-${Math.min(depth * 4, 12)}` : ''
   const borderClass = depth > 0 ? 'border-l-2 border-muted pl-4' : ''
@@ -147,15 +154,18 @@ function CommentItem({
                   e.stopPropagation()
                   onResolve(comment.id, !comment.isResolved)
                 }}
+                disabled={isResolving}
                 className={`
                   text-xs px-2 py-1 rounded transition-colors
-                  ${comment.isResolved
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-100'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ${isResolving
+                    ? 'opacity-50 cursor-not-allowed'
+                    : comment.isResolved
+                      ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-100'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }
                 `}
               >
-                {comment.isResolved ? 'Resolved' : 'Resolve'}
+                {isResolving ? '...' : comment.isResolved ? 'Resolved' : 'Resolve'}
               </button>
             )}
           </div>
@@ -250,6 +260,7 @@ export function CommentList({
   onClick,
   showResolveButton = false,
   emptyState,
+  resolvingCommentId = null,
   ...props
 }: CommentListProps) {
   const sortedComments = [...comments].sort(
@@ -277,6 +288,7 @@ export function CommentList({
           onResolve={onResolve}
           onClick={onClick}
           showResolveButton={showResolveButton}
+          resolvingCommentId={resolvingCommentId}
         />
       ))}
     </div>

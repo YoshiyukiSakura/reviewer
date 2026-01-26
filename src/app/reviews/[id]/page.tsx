@@ -285,12 +285,26 @@ export default function ReviewDetailPage({
     refetch: refetchComments,
   } = useReviewComments(id)
 
+  const { resolveComment, unresolveComment } = useCommentActions()
+  const [resolvingCommentId, setResolvingCommentId] = useState<string | null>(null)
+
   const handleResolveComment = useCallback(
     async (commentId: string, resolved: boolean) => {
-      // This would be connected to a resolve mutation hook
-      console.log('Resolve comment', commentId, resolved)
+      setResolvingCommentId(commentId)
+      try {
+        if (resolved) {
+          await resolveComment(commentId)
+        } else {
+          await unresolveComment(commentId)
+        }
+        await refetchComments()
+      } catch (err) {
+        console.error('Failed to resolve comment:', err)
+      } finally {
+        setResolvingCommentId(null)
+      }
     },
-    []
+    [resolveComment, unresolveComment, refetchComments]
   )
 
   const handleCommentCreated = useCallback(() => {
@@ -433,6 +447,7 @@ export default function ReviewDetailPage({
                   comments={comments}
                   showResolveButton
                   onResolve={handleResolveComment}
+                  resolvingCommentId={resolvingCommentId}
                 />
               )}
 
