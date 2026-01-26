@@ -15,6 +15,7 @@ import { axiosInstance, HttpError as NewHttpError } from '@/lib/http'
  */
 export interface UseReviewsResult {
   reviews: Review[]
+  total: number
   isLoading: boolean
   error: NewHttpError | null
   refetch: () => Promise<void>
@@ -70,6 +71,7 @@ export function useReviews(options: UseReviewsOptions = {}): UseReviewsResult {
 
   return {
     reviews: result.data?.items ?? [],
+    total: result.data?.total ?? 0,
     isLoading: result.isLoading,
     error: result.error,
     refetch: result.refetch,

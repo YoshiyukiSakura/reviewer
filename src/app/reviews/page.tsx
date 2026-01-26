@@ -300,6 +300,7 @@ export default function ReviewsListPage() {
   // Fetch reviews
   const {
     reviews,
+    total,
     isLoading,
     error,
     refetch,
@@ -309,9 +310,8 @@ export default function ReviewsListPage() {
   })
 
   const totalPages = useMemo(() => {
-    // This would come from the API response in a real implementation
-    return Math.ceil(reviews.length / pageSize) || 1
-  }, [reviews.length, pageSize])
+    return Math.ceil(total / pageSize) || 1
+  }, [total, pageSize])
 
   // Table columns configuration
   const columns: Column<Review>[] = useMemo(

@@ -20,6 +20,7 @@ describe('useReviews types', () => {
           updatedAt: new Date(),
         },
       ],
+      total: 1,
       isLoading: false,
       error: null,
       refetch: async () => {},
@@ -28,6 +29,7 @@ describe('useReviews types', () => {
 
     expect(mockResult.reviews).toHaveLength(1)
     expect(mockResult.reviews[0].id).toBe('review-1')
+    expect(mockResult.total).toBe(1)
     expect(mockResult.isLoading).toBe(false)
     expect(mockResult.error).toBeNull()
   })
