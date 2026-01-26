@@ -1,0 +1,35 @@
+name: MiniMax PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    runs-on: [self-hosted, linux]
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        env:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 设置允许的工具
+          export CLAUDE_CODE_ALLOWED_TOOLS="Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*)"
+
+          # 执行代码审查
+          minimax-code \
+            --dangerously-skip-permissions \
+            -p "请对 PR #${{ github.event.pull_request.number }} 进行代码审查，并用**中文**提供反馈意见。审查重点包括：代码质量、潜在 Bug、性能考虑、安全隐患。请使用 gh pr comment 命令将审查意见发布到 PR 上。"
