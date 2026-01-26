@@ -93,3 +93,18 @@ enum CommentSeverity {
   ERROR
   CRITICAL
 }
+
+// User model - represents a registered user
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  password     String?
+  avatarUrl    String?
+  slackUserId  String?   @unique
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+}
