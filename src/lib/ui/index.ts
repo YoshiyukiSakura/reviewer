@@ -48,3 +48,19 @@ export type { TableProps, Column, TableHeaderProps, TableBodyProps, TableRowProp
 // Badge
 export { Badge, default as BadgeDefault } from './badge'
 export type { BadgeProps } from './badge'
+
+// RatingStars
+export { RatingStars, default as RatingStarsDefault } from './rating-stars'
+export type { RatingStarsProps } from './rating-stars'
+
+// ReviewCard
+export { ReviewCard, default as ReviewCardDefault } from './review-card'
+export type { ReviewCardProps } from './review-card'
+
+// CommentList
+export { CommentList, default as CommentListDefault } from './comment-list'
+export type { CommentListProps } from './comment-list'
+
+// StatsChart
+export { StatsChart, default as StatsChartDefault } from './stats-chart'
+export type { StatsChartProps } from './stats-chart'
