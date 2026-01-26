@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { type User, type LoginCredentials, type AuthResponse } from '@/types'
-import { setAuthToken, getAuthToken } from '@/lib/http/client'
+import { setAuthToken, getAuthToken, axiosInstance, HttpError } from '@/lib/http/client'
 import { verifyToken, decodeToken, type TokenPayload } from '@/lib/auth'
 
 /**
@@ -19,9 +19,11 @@ export interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  error: string | null
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => void
   refreshUser: () => Promise<void>
+  clearError: () => void
 }
 
 /**
@@ -56,6 +58,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   /**
    * Initialize auth state from stored token
@@ -85,29 +88,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Login function
    */
   const login = useCallback(async (credentials: LoginCredentials) => {
+    setError(null)
     setIsLoading(true)
     try {
-      // In a real app, this would call the API
-      // For now, we'll simulate a login by decoding the token
-      // The actual implementation would be:
-      // const response = await axiosInstance.post<AuthResponse>('/auth/login', credentials)
-      // setAuthToken(response.data.token)
-      // setUser(response.data.user)
+      const response = await axiosInstance.post<AuthResponse>('/api/auth/login', credentials)
+      const { token, user: userData } = response.data
 
-      // Simulating API call for demonstration
-      const mockResponse: AuthResponse = {
-        user: {
-          id: 'user-1',
-          email: credentials.email,
-          name: 'Test User',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        token: 'mock-jwt-token',
+      setAuthToken(token)
+      setUser(userData)
+    } catch (err) {
+      if (err instanceof HttpError) {
+        setError(err.message)
+      } else if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unexpected error occurred during login')
       }
-
-      setAuthToken(mockResponse.token)
-      setUser(mockResponse.user)
+      throw err
     } finally {
       setIsLoading(false)
     }
@@ -119,6 +116,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = useCallback(() => {
     setAuthToken(null)
     setUser(null)
+    setError(null)
+  }, [])
+
+  /**
+   * Clear error function
+   */
+  const clearError = useCallback(() => {
+    setError(null)
   }, [])
 
   /**
@@ -151,9 +156,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     isAuthenticated: !!user,
     isLoading,
+    error,
     login,
     logout,
     refreshUser,
+    clearError,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
