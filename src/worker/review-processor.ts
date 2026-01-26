@@ -329,11 +329,12 @@ export class ReviewProcessor {
 
       lastError = result.error;
 
-      // Don't retry on certain errors
+      // Don't retry on certain errors (case-insensitive)
+      const lowerError = result.error.toLowerCase();
       if (
-        result.error.includes('not found') ||
-        result.error.includes('Invalid') ||
-        result.error.includes('expired')
+        lowerError.includes('not found') ||
+        lowerError.includes('invalid') ||
+        lowerError.includes('expired')
       ) {
         break;
       }
