@@ -80,7 +80,7 @@ export function useDataFetch<T>(
     data,
     isLoading,
     error,
-    refetch: fetchData,
+    refetch: () => fetchData().then(() => {}),
     isRefetching,
   }
 }

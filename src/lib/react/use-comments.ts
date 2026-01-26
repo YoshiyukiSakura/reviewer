@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { useDataFetch, UseDataFetchOptions } from './use-data-fetch'
-import type { ReviewComment, CommentFilterParams, PaginatedResponse, HttpError } from '@/types'
+import type { ReviewComment, CommentFilterParams, PaginatedResponse } from '@/types'
 import { axiosInstance, HttpError as NewHttpError } from '@/lib/http'
 
 /**

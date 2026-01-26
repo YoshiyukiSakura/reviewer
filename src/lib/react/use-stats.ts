@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import { useDataFetch, UseDataFetchOptions } from './use-data-fetch'
-import type { ReviewStats, CommentStats, DashboardStats, HttpError } from '@/types'
+import type { ReviewStats, CommentStats, DashboardStats } from '@/types'
 import { axiosInstance, HttpError as NewHttpError } from '@/lib/http'
 
 /**

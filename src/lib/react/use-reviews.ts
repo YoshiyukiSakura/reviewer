@@ -7,7 +7,7 @@ import {
   UseDataFetchOptions,
   UsePaginatedDataFetchOptions,
 } from './use-data-fetch'
-import type { Review, ReviewFilterParams, PaginatedResponse, HttpError } from '@/types'
+import type { Review, ReviewFilterParams, PaginatedResponse } from '@/types'
 import { axiosInstance, HttpError as NewHttpError } from '@/lib/http'
 
 /**

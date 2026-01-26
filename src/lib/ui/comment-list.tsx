@@ -4,7 +4,7 @@ import { type HTMLAttributes, useState } from 'react'
 import { type ReviewComment, CommentSeverity } from '@/types'
 import { Badge } from './badge'
 
-export interface CommentListProps extends HTMLAttributes<HTMLDivElement> {
+export interface CommentListProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onClick'> {
   /**
    * List of comments to display
    */
