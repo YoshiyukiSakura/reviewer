@@ -36,3 +36,11 @@ export {
   useStatsActions,
 } from './use-stats'
 export type { UseDashboardStatsResult, UseReviewStatsResult, UseCommentStatsResult, UseActivityStatsResult, UseUserStatsResult, UseStatsActionsResult, ActivityDataPoint, ActivityStatsOptions } from './use-stats'
+
+// Settings hooks
+export {
+  useProfileSettings,
+  useNotificationSettings,
+  usePasswordChange,
+} from './use-settings'
+export type { UseProfileSettingsResult, UseNotificationSettingsResult, UsePasswordChangeResult } from './use-settings'

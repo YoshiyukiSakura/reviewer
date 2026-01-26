@@ -106,6 +106,21 @@ export interface User {
   email?: string
   name?: string
   avatarUrl?: string
+  bio?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Notification settings
+export interface NotificationSettings {
+  id: string
+  userId: string
+  emailNotifications: boolean
+  pushNotifications: boolean
+  reviewAssignments: boolean
+  reviewComments: boolean
+  reviewStatusChanges: boolean
+  weeklyDigest: boolean
   createdAt: Date
   updatedAt: Date
 }
