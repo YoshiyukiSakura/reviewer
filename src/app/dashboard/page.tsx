@@ -53,7 +53,7 @@ function StatCard({ label, value, description, trend, trendValue, icon, color = 
             className="w-12 h-12 rounded-lg flex items-center justify-center"
             style={{ backgroundColor: `${color}15` }}
           >
-            {icon ?? <BarChart3 className="h-6 w-6" style={{ color }} />}
+            {icon || <BarChart3 className="h-6 w-6" style={{ color }} />}
           </div>
         </div>
       </CardContent>
