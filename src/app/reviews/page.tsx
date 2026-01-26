@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useReviews } from '@/lib/react'
 import {
   Card,
@@ -263,6 +264,8 @@ function EmptyState({ onClearFilters }: EmptyStateProps) {
  * Reviews list page component
  */
 export default function ReviewsListPage() {
+  const router = useRouter()
+
   // Filter state
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ReviewStatus | ''>('')
@@ -378,7 +381,7 @@ export default function ReviewsListPage() {
   )
 
   const handleRowClick = (review: Review) => {
-    window.location.href = `/reviews/${review.id}`
+    router.push(`/reviews/${review.id}`)
   }
 
   return (
