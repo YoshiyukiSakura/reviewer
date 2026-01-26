@@ -136,9 +136,9 @@ interface PaginationProps {
 }
 
 function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  if (totalPages <= 1) return null
-
   const pages = useMemo(() => {
+    if (totalPages <= 1) return []
+
     const result: (number | 'ellipsis')[] = []
     const maxVisible = 5
 
@@ -162,6 +162,8 @@ function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) 
 
     return result
   }, [currentPage, totalPages])
+
+  if (pages.length === 0) return null
 
   return (
     <div className="flex items-center gap-1">
