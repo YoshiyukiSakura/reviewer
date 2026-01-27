@@ -35,7 +35,7 @@ model Review {
   // Relations
   comments ReviewComment[]
 
-  @@map("reviewer_Review")
+  @@map("reviewer_review")
   @@schema("reviewer")
   @@index([authorId])
   @@index([status])
@@ -73,7 +73,7 @@ model ReviewComment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("reviewer_ReviewComment")
+  @@map("reviewer_reviewcomment")
   @@schema("reviewer")
   @@index([reviewId])
   @@index([authorId])
@@ -128,7 +128,7 @@ model User {
   // Relations
   notificationSettings NotificationSettings?
 
-  @@map("reviewer_User")
+  @@map("reviewer_user")
   @@schema("reviewer")
   @@index([email])
 }
@@ -154,7 +154,7 @@ model NotificationSettings {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  @@map("reviewer_NotificationSettings")
+  @@map("reviewer_notificationsettings")
   @@schema("reviewer")
   @@index([userId])
 }
@@ -214,7 +214,7 @@ model TestReport {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  @@map("reviewer_TestReport")
+  @@map("reviewer_testreport")
   @@schema("reviewer")
   @@index([authorId])
   @@index([recommendation])
