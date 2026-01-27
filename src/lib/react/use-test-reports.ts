@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import {
   useDataFetch,
   UseDataFetchOptions,
@@ -118,18 +118,27 @@ export function useTestReport(reportId: string): UseTestReportResult {
  */
 export interface UseTestReportActionsResult {
   generateReport: (data: CreateTestReportInput) => Promise<TestReport>
+  isLoading: boolean
 }
 
 /**
  * Hook providing test report mutation actions
  */
 export function useTestReportActions(): UseTestReportActionsResult {
+  const [isLoading, setIsLoading] = useState(false)
+
   const generateReport = useCallback(async (data: CreateTestReportInput): Promise<TestReport> => {
-    const response = await axiosInstance.post<TestReport>('/test-reports', data)
-    return response.data
+    setIsLoading(true)
+    try {
+      const response = await axiosInstance.post<TestReport>('/test-reports', data)
+      return response.data
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   return {
     generateReport,
+    isLoading,
   }
 }
