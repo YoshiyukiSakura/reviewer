@@ -64,3 +64,7 @@ export type { CommentListProps } from './comment-list'
 // StatsChart
 export { StatsChart, default as StatsChartDefault } from './stats-chart'
 export type { StatsChartProps } from './stats-chart'
+
+// ScoreGauge
+export { ScoreGauge, default as ScoreGaugeDefault } from './score-gauge'
+export type { ScoreGaugeProps } from './score-gauge'
