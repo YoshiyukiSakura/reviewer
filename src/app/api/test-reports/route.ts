@@ -5,7 +5,7 @@ import { verifyToken, type TokenPayload } from '@/lib/auth';
 import { collectTestReportContext } from '@/lib/test-report/collector';
 import { createTestReportGeneratorFromEnv, type TestReportResult } from '@/lib/test-report/generator';
 import { log } from '@/lib/remote-log';
-import type { GetPRDiffParams } from '@/lib/github/pr-diff';
+import { parseGitHubPRUrl, type GetPRDiffParams } from '@/lib/github';
 
 async function getTokenPayload(request: Request): Promise<TokenPayload | null> {
   const authHeader = request.headers.get('Authorization');
@@ -152,23 +152,9 @@ export async function POST(request: Request) {
 
     let prParams: GetPRDiffParams | undefined;
     if (execution.sourceUrl) {
-      try {
-        const url = new URL(execution.sourceUrl);
-        const pathParts = url.pathname.split('/').filter(Boolean);
-        if (pathParts.length >= 2 && url.pathname.includes('/pull/')) {
-          const owner = pathParts[0];
-          const repo = pathParts[1];
-          const prMatch = url.pathname.match(/pull\/(\d+)/);
-          if (prMatch) {
-            prParams = {
-              owner,
-              repo,
-              pullNumber: parseInt(prMatch[1], 10),
-            };
-          }
-        }
-      } catch {
-        // Invalid URL, skip PR diff collection
+      const parsed = parseGitHubPRUrl(execution.sourceUrl);
+      if (parsed) {
+        prParams = parsed;
       }
     }
 
