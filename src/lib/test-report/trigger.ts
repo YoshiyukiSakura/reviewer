@@ -7,6 +7,7 @@
 
 import { prisma } from '../prisma';
 import { log } from '../remote-log';
+import { parseGitHubPRUrl } from '../github';
 import { collectTestReportContext } from './collector';
 import { createTestReportGeneratorFromEnv, type TestReportResult } from './generator';
 import type { TestReport } from '@prisma/client';
@@ -95,7 +96,7 @@ export async function triggerTestReport(
     }
 
     // Collect context data
-    const prParams = extractPRParams(review.sourceUrl);
+    const prParams = review.sourceUrl ? parseGitHubPRUrl(review.sourceUrl) : undefined;
     const contextResult = await collectTestReportContext({
       reviewId,
       prParams,
@@ -183,38 +184,6 @@ export async function triggerTestReport(
     log.error('Failed to trigger test report', { reviewId, error: errorMessage });
     return { success: false, error: errorMessage };
   }
-}
-
-/**
- * Extracts PR parameters from a source URL
- */
-function extractPRParams(sourceUrl: string | null): { owner: string; repo: string; pullNumber: number } | undefined {
-  if (!sourceUrl) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(sourceUrl);
-    const pathParts = url.pathname.split('/').filter(Boolean);
-
-    if (pathParts.length >= 2 && url.pathname.includes('/pull/')) {
-      const owner = pathParts[0];
-      const repo = pathParts[1];
-      const prMatch = url.pathname.match(/pull\/(\d+)/);
-
-      if (prMatch) {
-        return {
-          owner,
-          repo,
-          pullNumber: parseInt(prMatch[1], 10),
-        };
-      }
-    }
-  } catch {
-    // Invalid URL, ignore
-  }
-
-  return undefined;
 }
 
 /**
