@@ -31,7 +31,8 @@ model Review {
   updatedAt DateTime @updatedAt
 
   // Relations
-  comments ReviewComment[]
+  comments    ReviewComment[]
+  testReports TestReport[]
 
   @@index([authorId])
   @@index([status])
@@ -152,6 +153,7 @@ model TestReport {
 
   // Link to execution/review
   executionId String?
+  execution   Review?   @relation(fields: [executionId], references: [id])
 
   // Recommendation
   recommendation RecommendationType
