@@ -35,6 +35,7 @@ model Review {
   comments ReviewComment[]
 
   @@map("reviewer_Review")
+  @@schema("reviewer")
   @@index([authorId])
   @@index([status])
   @@index([createdAt])
@@ -72,6 +73,7 @@ model ReviewComment {
   updatedAt DateTime @updatedAt
 
   @@map("reviewer_ReviewComment")
+  @@schema("reviewer")
   @@index([reviewId])
   @@index([authorId])
   @@index([parentId])
@@ -86,6 +88,8 @@ enum ReviewerReviewStatus {
   REJECTED
   CHANGES_REQUESTED
   CLOSED
+
+  @@schema("reviewer")
 }
 
 // Enum for comment severity (prefixed to avoid conflict)
@@ -95,6 +99,8 @@ enum ReviewerCommentSeverity {
   WARNING
   ERROR
   CRITICAL
+
+  @@schema("reviewer")
 }
 
 // Enum for recommendation type
@@ -102,6 +108,8 @@ enum RecommendationType {
   MERGE
   NEEDS_CHANGES
   REJECT
+
+  @@schema("reviewer")
 }
 
 // User model - represents a registered user
@@ -120,6 +128,7 @@ model User {
   notificationSettings NotificationSettings?
 
   @@map("reviewer_User")
+  @@schema("reviewer")
   @@index([email])
 }
 
@@ -145,6 +154,7 @@ model NotificationSettings {
   updatedAt           DateTime @updatedAt
 
   @@map("reviewer_NotificationSettings")
+  @@schema("reviewer")
   @@index([userId])
 }
 
@@ -204,6 +214,7 @@ model TestReport {
   updatedAt        DateTime  @updatedAt
 
   @@map("reviewer_TestReport")
+  @@schema("reviewer")
   @@index([authorId])
   @@index([recommendation])
   @@index([executedAt])
