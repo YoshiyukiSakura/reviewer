@@ -8,6 +8,7 @@
 import { prisma } from '../prisma';
 import { log } from '../remote-log';
 import { getPRDiff, GetPRDiffParams } from '../github/pr-diff';
+import { parseGitHubPRUrl } from '../github/url-parser';
 
 // Import types generated from Prisma schema
 import type { TestReport } from '@prisma/client';
@@ -189,19 +190,10 @@ async function collectPlanInfo(execution: ExecutionData | null): Promise<Collect
     let pullRequestId: string | null = null;
 
     if (execution.sourceUrl) {
-      try {
-        const url = new URL(execution.sourceUrl);
-        const pathParts = url.pathname.split('/').filter(Boolean);
-        if (pathParts.length >= 2) {
-          repositoryName = `${pathParts[0]}/${pathParts[1]}`;
-        }
-        // Extract PR number from URL if it's a PR link
-        const prMatch = url.pathname.match(/pull\/(\d+)/);
-        if (prMatch) {
-          pullRequestId = prMatch[1];
-        }
-      } catch {
-        // Invalid URL, skip parsing
+      const parsed = parseGitHubPRUrl(execution.sourceUrl);
+      if (parsed) {
+        repositoryName = `${parsed.owner}/${parsed.repo}`;
+        pullRequestId = String(parsed.pullNumber);
       }
     }
 
