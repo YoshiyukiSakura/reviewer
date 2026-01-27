@@ -94,6 +94,13 @@ enum CommentSeverity {
   CRITICAL
 }
 
+// Enum for recommendation type
+enum RecommendationType {
+  MERGE
+  NEEDS_CHANGES
+  REJECT
+}
+
 // User model - represents a registered user
 model User {
   id           String    @id @default(cuid())
@@ -135,4 +142,57 @@ model NotificationSettings {
   updatedAt           DateTime @updatedAt
 
   @@index([userId])
+}
+
+// TestReport model - represents a test report
+model TestReport {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+
+  // Recommendation
+  recommendation RecommendationType
+  recommendationReason String?
+
+  // Task statistics
+  totalTasks      Int      @default(0)
+  completedTasks  Int      @default(0)
+  failedTasks     Int      @default(0)
+  skippedTasks    Int      @default(0)
+
+  // Traceability snapshot
+  repositoryName   String?
+  repositoryUrl    String?
+  branchName       String?
+  commitSha        String?
+  pullRequestId    String?
+  pullRequestUrl   String?
+
+  // AI generated content
+  summary          String?
+  overallAnalysis  String?
+
+  // Scoring
+  score            Float?
+  maxScore         Float?
+
+  // Acceptance suggestion
+  acceptanceSuggestion String?
+
+  // Metadata
+  testDuration     Int?     // Duration in milliseconds
+  testRunner       String?
+
+  // Author information
+  authorId         String?
+  authorName       String?
+
+  // Timestamps
+  executedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([authorId])
+  @@index([recommendation])
+  @@index([executedAt])
 }
