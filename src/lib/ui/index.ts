@@ -68,3 +68,7 @@ export type { StatsChartProps } from './stats-chart'
 // ScoreGauge
 export { ScoreGauge, default as ScoreGaugeDefault } from './score-gauge'
 export type { ScoreGaugeProps } from './score-gauge'
+
+// RecommendationBadge
+export { RecommendationBadge, default as RecommendationBadgeDefault } from './recommendation-badge'
+export type { RecommendationBadgeProps, RecommendationType } from './recommendation-badge'
