@@ -3,6 +3,7 @@
 import { type HTMLAttributes } from 'react'
 import { type ReviewStats, type CommentStats, type DashboardStats } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './card'
+import { FileText } from 'lucide-react'
 
 export interface StatsChartProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -354,7 +355,7 @@ export function StatsChart({
               label="Total Reviews"
               value={stats.reviews.total}
               color="#3b82f6"
-              icon={<span className="text-lg">📋</span>}
+              icon={<FileText className="h-5 w-5" style={{ color: '#3b82f6' }} />}
             />
             <StatCard
               label="Pending"

@@ -165,20 +165,21 @@ describe('usePaginatedDataFetch types', () => {
   })
 })
 
-describe('Hook exports', async () => {
-  const hooks = await import('../use-data-fetch')
-
-  it('should export useDataFetch hook', () => {
+describe('Hook exports', () => {
+  it('should export useDataFetch hook', async () => {
+    const hooks = await import('../use-data-fetch')
     expect(hooks.useDataFetch).toBeDefined()
     expect(typeof hooks.useDataFetch).toBe('function')
   })
 
-  it('should export usePaginatedDataFetch hook', () => {
+  it('should export usePaginatedDataFetch hook', async () => {
+    const hooks = await import('../use-data-fetch')
     expect(hooks.usePaginatedDataFetch).toBeDefined()
     expect(typeof hooks.usePaginatedDataFetch).toBe('function')
   })
 
-  it('should export type definitions', () => {
+  it('should export type definitions', async () => {
+    const hooks = await import('../use-data-fetch')
     expect(hooks.UseDataFetchResult).toBeDefined()
     expect(hooks.UsePaginatedDataFetchResult).toBeDefined()
   })

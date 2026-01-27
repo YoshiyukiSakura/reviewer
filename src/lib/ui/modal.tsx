@@ -3,6 +3,7 @@
 import {
   useEffect,
   useCallback,
+  useState,
   type ReactNode,
   type ReactElement,
 } from 'react'
@@ -124,9 +125,16 @@ export function Modal({
     }
   }
 
+  // SSR: Track if component is mounted (client-side)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Add/remove event listeners
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isMounted) {
       document.addEventListener('keydown', handleKeyDown)
       document.body.style.overflow = 'hidden'
     }
@@ -135,10 +143,10 @@ export function Modal({
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen, handleKeyDown])
+  }, [isOpen, handleKeyDown, isMounted])
 
-  // Don't render if closed
-  if (!isOpen) {
+  // Don't render if closed or not mounted (SSR protection)
+  if (!isOpen || !isMounted) {
     return null
   }
 

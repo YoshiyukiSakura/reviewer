@@ -64,3 +64,12 @@ export type { CommentListProps } from './comment-list'
 // StatsChart
 export { StatsChart, default as StatsChartDefault } from './stats-chart'
 export type { StatsChartProps } from './stats-chart'
+
+// Header
+export { Header, default as HeaderDefault, defaultNavItems, type HeaderProps, type HeaderItem } from './header'
+
+// Sidebar
+export { Sidebar, SidebarOverlay, default as SidebarDefault, defaultSidebarItems, type SidebarProps, type SidebarItem } from './sidebar'
+
+// ErrorBoundary
+export { ErrorBoundary, default as ErrorBoundaryDefault, type ErrorBoundaryProps } from './error-boundary'

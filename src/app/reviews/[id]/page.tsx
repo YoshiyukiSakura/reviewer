@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   useReview,
   useReviewComments,
@@ -18,6 +19,7 @@ import { Badge } from '@/lib/ui/badge'
 import { Button } from '@/lib/ui/button'
 import { Input } from '@/lib/ui/input'
 import { CommentList } from '@/lib/ui/comment-list'
+import { ErrorBoundary } from '@/lib/ui'
 import type { Review, ReviewComment, ReviewStatus, CommentSeverity } from '@/types'
 
 /**
@@ -269,6 +271,7 @@ export default function ReviewDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const router = useRouter()
   const { id } = use(params)
   const { user } = useAuth()
 
@@ -285,12 +288,26 @@ export default function ReviewDetailPage({
     refetch: refetchComments,
   } = useReviewComments(id)
 
+  const { resolveComment, unresolveComment } = useCommentActions()
+  const [resolvingCommentId, setResolvingCommentId] = useState<string | null>(null)
+
   const handleResolveComment = useCallback(
     async (commentId: string, resolved: boolean) => {
-      // This would be connected to a resolve mutation hook
-      console.log('Resolve comment', commentId, resolved)
+      setResolvingCommentId(commentId)
+      try {
+        if (resolved) {
+          await resolveComment(commentId)
+        } else {
+          await unresolveComment(commentId)
+        }
+        await refetchComments()
+      } catch (err) {
+        console.error('Failed to resolve comment:', err)
+      } finally {
+        setResolvingCommentId(null)
+      }
     },
-    []
+    [resolveComment, unresolveComment, refetchComments]
   )
 
   const handleCommentCreated = useCallback(() => {
@@ -299,8 +316,8 @@ export default function ReviewDetailPage({
   }, [refetchComments, refetchReview])
 
   const handleBack = useCallback(() => {
-    window.history.back()
-  }, [])
+    router.back()
+  }, [router])
 
   const commentStats = useMemo(() => {
     const total = comments.length
@@ -362,166 +379,169 @@ export default function ReviewDetailPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content - Review details and comments */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Review details card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {review.description ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap">{review.description}</p>
-                </div>
-              ) : (
-                <p className="text-muted-foreground italic">No description provided</p>
-              )}
+      <ErrorBoundary>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main content - Review details and comments */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Review details card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {review.description ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <p className="whitespace-pre-wrap">{review.description}</p>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">No description provided</p>
+                )}
 
-              {/* Source information */}
-              {review.sourceType && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Source</h4>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Badge variant="outline" size="sm">
-                      {review.sourceType.replace('_', ' ')}
-                    </Badge>
-                    {review.sourceId && <span>{review.sourceId}</span>}
-                    {review.sourceUrl && (
-                      <a
-                        href={review.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        View Source
-                      </a>
-                    )}
+                {/* Source information */}
+                {review.sourceType && (
+                  <div className="mt-4 pt-4 border-t">
+                    <h4 className="text-sm font-medium mb-2">Source</h4>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Badge variant="outline" size="sm">
+                        {review.sourceType.replace('_', ' ')}
+                      </Badge>
+                      {review.sourceId && <span>{review.sourceId}</span>}
+                      {review.sourceUrl && (
+                        <a
+                          href={review.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          View Source
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Comments section */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Comments</CardTitle>
+                  <div className="flex gap-4 text-sm text-muted-foreground">
+                    <span>{commentStats.total} total</span>
+                    <span className="text-green-600">
+                      {commentStats.resolved} resolved
+                    </span>
+                    <span className="text-yellow-600">
+                      {commentStats.unresolved} open
+                    </span>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Comments section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Comments</CardTitle>
-                <div className="flex gap-4 text-sm text-muted-foreground">
-                  <span>{commentStats.total} total</span>
-                  <span className="text-green-600">
-                    {commentStats.resolved} resolved
-                  </span>
-                  <span className="text-yellow-600">
-                    {commentStats.unresolved} open
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Comments list */}
-              {commentsLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="h-20 animate-pulse rounded bg-muted" />
-                  ))}
-                </div>
-              ) : (
-                <CommentList
-                  comments={comments}
-                  showResolveButton
-                  onResolve={handleResolveComment}
-                />
-              )}
-
-              {/* Add comment form */}
-              <div className="mt-6 pt-6 border-t">
-                <h4 className="text-sm font-medium mb-4">Add a Comment</h4>
-                <NewCommentForm
-                  reviewId={id}
-                  onSuccess={handleCommentCreated}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar - Meta information */}
-        <div className="space-y-6">
-          {/* Author card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Author</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-lg font-medium">
-                    {review.authorName?.charAt(0) || 'A'}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-medium">
-                    {review.authorName || 'Anonymous'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {review.authorId.slice(0, 8)}...
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Timeline card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <span className="text-sm text-muted-foreground">Created</span>
-                  <span className="text-sm font-medium">
-                    {formatRelativeTime(review.createdAt)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-start">
-                  <span className="text-sm text-muted-foreground">Last updated</span>
-                  <span className="text-sm font-medium">
-                    {formatRelativeTime(review.updatedAt)}
-                  </span>
-                </div>
-                {review.updatedAt !== review.createdAt && (
-                  <p className="text-xs text-muted-foreground pt-2 border-t">
-                    Edited {formatDate(review.updatedAt)}
-                  </p>
+              </CardHeader>
+              <CardContent>
+                {/* Comments list */}
+                {commentsLoading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <div key={i} className="h-20 animate-pulse rounded bg-muted" />
+                    ))}
+                  </div>
+                ) : (
+                  <CommentList
+                    comments={comments}
+                    showResolveButton
+                    onResolve={handleResolveComment}
+                    resolvingCommentId={resolvingCommentId}
+                  />
                 )}
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Quick stats card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 rounded-lg bg-muted/50">
-                  <p className="text-2xl font-bold">{commentStats.total}</p>
-                  <p className="text-xs text-muted-foreground">Comments</p>
+                {/* Add comment form */}
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="text-sm font-medium mb-4">Add a Comment</h4>
+                  <NewCommentForm
+                    reviewId={id}
+                    onSuccess={handleCommentCreated}
+                  />
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/50">
-                  <p className="text-2xl font-bold">{commentStats.unresolved}</p>
-                  <p className="text-xs text-muted-foreground">Open</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Meta information */}
+          <div className="space-y-6">
+            {/* Author card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Author</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg font-medium">
+                      {review.authorName?.charAt(0) || 'A'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {review.authorName || 'Anonymous'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {review.authorId.slice(0, 8)}...
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Timeline card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Timeline</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <span className="text-sm text-muted-foreground">Created</span>
+                    <span className="text-sm font-medium">
+                      {formatRelativeTime(review.createdAt)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <span className="text-sm text-muted-foreground">Last updated</span>
+                    <span className="text-sm font-medium">
+                      {formatRelativeTime(review.updatedAt)}
+                    </span>
+                  </div>
+                  {review.updatedAt !== review.createdAt && (
+                    <p className="text-xs text-muted-foreground pt-2 border-t">
+                      Edited {formatDate(review.updatedAt)}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick stats card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold">{commentStats.total}</p>
+                    <p className="text-xs text-muted-foreground">Comments</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold">{commentStats.unresolved}</p>
+                    <p className="text-xs text-muted-foreground">Open</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </div>
   )
 }

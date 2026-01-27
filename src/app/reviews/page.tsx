@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useReviews } from '@/lib/react'
 import {
   Card,
@@ -12,6 +13,8 @@ import { Table, type Column } from '@/lib/ui/table'
 import { Badge } from '@/lib/ui/badge'
 import { Button } from '@/lib/ui/button'
 import { Input } from '@/lib/ui/input'
+import { ErrorBoundary } from '@/lib/ui'
+import { Search, FileText } from 'lucide-react'
 import type { Review, ReviewFilterParams, ReviewStatus, PaginatedResponse } from '@/types'
 
 /**
@@ -81,7 +84,7 @@ function FilterBar({
           placeholder="Search reviews..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          leftAddon="🔍"
+          leftAddon={<Search className="h-4 w-4" />}
         />
       </div>
 
@@ -136,9 +139,9 @@ interface PaginationProps {
 }
 
 function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  if (totalPages <= 1) return null
-
   const pages = useMemo(() => {
+    if (totalPages <= 1) return []
+
     const result: (number | 'ellipsis')[] = []
     const maxVisible = 5
 
@@ -162,6 +165,8 @@ function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) 
 
     return result
   }, [currentPage, totalPages])
+
+  if (pages.length === 0) return null
 
   return (
     <div className="flex items-center gap-1">
@@ -236,22 +241,21 @@ function ReviewsTableSkeleton() {
 /**
  * Empty state component
  */
-function EmptyState() {
+interface EmptyStateProps {
+  onClearFilters: () => void
+}
+
+function EmptyState({ onClearFilters }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-        <span className="text-3xl">📋</span>
+        <FileText className="h-8 w-8 text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold mb-2">No reviews found</h3>
       <p className="text-muted-foreground mb-4">
         Try adjusting your search or filter criteria
       </p>
-      <Button
-        variant="outline"
-        onClick={() => {
-          window.location.reload()
-        }}
-      >
+      <Button variant="outline" onClick={onClearFilters}>
         Clear Filters
       </Button>
     </div>
@@ -262,6 +266,8 @@ function EmptyState() {
  * Reviews list page component
  */
 export default function ReviewsListPage() {
+  const router = useRouter()
+
   // Filter state
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ReviewStatus | ''>('')
@@ -280,7 +286,16 @@ export default function ReviewsListPage() {
   // Reset page when filters change
   const handleFilterChange = useCallback(() => {
     setPage(1)
-  }, [search, statusFilter, sortBy, sortOrder])
+  }, [setPage])
+
+  // Clear all filters
+  const handleClearFilters = useCallback(() => {
+    setSearch('')
+    setStatusFilter('')
+    setSortBy('createdAt')
+    setSortOrder('desc')
+    setPage(1)
+  }, [])
 
   // Apply filters
   const filters: ReviewFilterParams = useMemo(
@@ -298,6 +313,7 @@ export default function ReviewsListPage() {
   // Fetch reviews
   const {
     reviews,
+    total,
     isLoading,
     error,
     refetch,
@@ -307,9 +323,8 @@ export default function ReviewsListPage() {
   })
 
   const totalPages = useMemo(() => {
-    // This would come from the API response in a real implementation
-    return Math.ceil(reviews.length / pageSize) || 1
-  }, [reviews.length, pageSize])
+    return Math.ceil(total / pageSize) || 1
+  }, [total, pageSize])
 
   // Table columns configuration
   const columns: Column<Review>[] = useMemo(
@@ -368,7 +383,7 @@ export default function ReviewsListPage() {
   )
 
   const handleRowClick = (review: Review) => {
-    window.location.href = `/reviews/${review.id}`
+    router.push(`/reviews/${review.id}`)
   }
 
   return (
@@ -401,59 +416,61 @@ export default function ReviewsListPage() {
           <CardTitle>All Reviews</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Filter bar */}
-          <FilterBar
-            search={search}
-            onSearchChange={(value) => {
-              setSearch(value)
-              handleFilterChange()
-            }}
-            statusFilter={statusFilter}
-            onStatusFilterChange={(value) => {
-              setStatusFilter(value)
-              handleFilterChange()
-            }}
-            sortBy={sortBy}
-            onSortByChange={(value) => {
-              setSortBy(value)
-              handleFilterChange()
-            }}
-            sortOrder={sortOrder}
-            onSortOrderChange={(value) => {
-              setSortOrder(value)
-              handleFilterChange()
-            }}
-          />
+          <ErrorBoundary>
+            {/* Filter bar */}
+            <FilterBar
+              search={search}
+              onSearchChange={(value) => {
+                setSearch(value)
+                handleFilterChange()
+              }}
+              statusFilter={statusFilter}
+              onStatusFilterChange={(value) => {
+                setStatusFilter(value)
+                handleFilterChange()
+              }}
+              sortBy={sortBy}
+              onSortByChange={(value) => {
+                setSortBy(value)
+                handleFilterChange()
+              }}
+              sortOrder={sortOrder}
+              onSortOrderChange={(value) => {
+                setSortOrder(value)
+                handleFilterChange()
+              }}
+            />
 
-          {/* Table or loading/empty state */}
-          {isLoading ? (
-            <ReviewsTableSkeleton />
-          ) : reviews.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <>
-              <Table
-                columns={columns}
-                data={reviews}
-                rowKey="id"
-                onRowClick={handleRowClick}
-                hoverable
-                size="default"
-              />
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Showing {reviews.length} reviews
-                </p>
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
+            {/* Table or loading/empty state */}
+            {isLoading ? (
+              <ReviewsTableSkeleton />
+            ) : reviews.length === 0 ? (
+              <EmptyState onClearFilters={handleClearFilters} />
+            ) : (
+              <>
+                <Table
+                  columns={columns}
+                  data={reviews}
+                  rowKey="id"
+                  onRowClick={handleRowClick}
+                  hoverable
+                  size="default"
                 />
-              </div>
-            </>
-          )}
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {reviews.length} reviews
+                  </p>
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                  />
+                </div>
+              </>
+            )}
+          </ErrorBoundary>
         </CardContent>
       </Card>
     </div>
