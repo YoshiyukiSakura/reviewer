@@ -170,12 +170,12 @@ async function generateActivityData(
   const reviewsMap = new Map<string, number>()
   const commentsMap = new Map<string, number>()
 
-  reviews.forEach((item) => {
+  reviews.forEach((item: { createdAt: Date }) => {
     const dateKey = item.createdAt.toISOString().split('T')[0]
     reviewsMap.set(dateKey, (reviewsMap.get(dateKey) || 0) + 1)
   })
 
-  comments.forEach((item) => {
+  comments.forEach((item: { createdAt: Date }) => {
     const dateKey = item.createdAt.toISOString().split('T')[0]
     commentsMap.set(dateKey, (commentsMap.get(dateKey) || 0) + 1)
   })
