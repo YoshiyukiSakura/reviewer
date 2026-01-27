@@ -21,6 +21,7 @@ import {
 } from '../lib/ai/reviewer';
 import { prisma } from '../lib/prisma';
 import { log } from '../lib/remote-log';
+import { triggerTestReportAsync, isReviewCompleted } from '../lib/test-report/trigger';
 import type { ReviewStatus, CommentSeverity } from '../types';
 
 // ============================================================================
@@ -39,6 +40,8 @@ export interface ReviewProcessorConfig {
   maxRetries?: number;
   /** Delay between retries in milliseconds */
   retryDelayMs?: number;
+  /** Whether to automatically generate test reports when review is completed */
+  autoGenerateTestReport?: boolean;
 }
 
 /**
@@ -268,6 +271,7 @@ export class ReviewProcessor {
       dryRun: config.dryRun ?? false,
       maxRetries: config.maxRetries ?? 3,
       retryDelayMs: config.retryDelayMs ?? 1000,
+      autoGenerateTestReport: config.autoGenerateTestReport ?? true,
     };
   }
 
@@ -388,6 +392,23 @@ export class ReviewProcessor {
 
         reviewId = saveResult.reviewId;
         await log.info('Review saved to database', { ...logContext, reviewId });
+
+        // Trigger test report generation if enabled and review is completed
+        if (this.config.autoGenerateTestReport && reviewId) {
+          const review = await prisma.review.findUnique({
+            where: { id: reviewId },
+            select: { status: true },
+          });
+
+          if (review && isReviewCompleted(review.status)) {
+            await log.info('Review completed, triggering test report generation', {
+              ...logContext,
+              reviewId,
+              status: review.status,
+            });
+            triggerTestReportAsync({ reviewId });
+          }
+        }
       } else {
         await log.info('Dry run mode - skipping database save', logContext);
       }
@@ -952,6 +973,23 @@ export class GitHubActionReviewProcessor {
 
         reviewId = saveResult.reviewId;
         await log.info('Review saved to database', { ...logContext, reviewId });
+
+        // Trigger test report generation if enabled and review is completed
+        if (this.config.autoGenerateTestReport && reviewId) {
+          const review = await prisma.review.findUnique({
+            where: { id: reviewId },
+            select: { status: true },
+          });
+
+          if (review && isReviewCompleted(review.status)) {
+            await log.info('Review completed, triggering test report generation', {
+              ...logContext,
+              reviewId,
+              status: review.status,
+            });
+            triggerTestReportAsync({ reviewId });
+          }
+        }
       } else {
         await log.info('Dry run mode - skipping database save', logContext);
       }

@@ -38,8 +38,14 @@ vi.mock('../lib/prisma', () => ({
   prisma: {
     review: {
       create: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
+}));
+
+vi.mock('../lib/test-report/trigger', () => ({
+  triggerTestReportAsync: vi.fn(),
+  isReviewCompleted: vi.fn(),
 }));
 
 vi.mock('../lib/remote-log', () => ({
@@ -61,12 +67,16 @@ import { createPRReview } from '../lib/github/pr-reviews';
 import { createReviewerFromEnv } from '../lib/ai/reviewer';
 import { prisma } from '../lib/prisma';
 import { log } from '../lib/remote-log';
+import { triggerTestReportAsync, isReviewCompleted } from '../lib/test-report/trigger';
 
 // Type assertions for mocks
 const mockGetPRDiff = getPRDiff as ReturnType<typeof vi.fn>;
 const mockCreatePRReview = createPRReview as ReturnType<typeof vi.fn>;
 const mockCreateReviewerFromEnv = createReviewerFromEnv as ReturnType<typeof vi.fn>;
 const mockPrismaReviewCreate = prisma.review.create as ReturnType<typeof vi.fn>;
+const mockPrismaReviewFindUnique = prisma.review.findUnique as ReturnType<typeof vi.fn>;
+const mockTriggerTestReportAsync = triggerTestReportAsync as ReturnType<typeof vi.fn>;
+const mockIsReviewCompleted = isReviewCompleted as ReturnType<typeof vi.fn>;
 
 // Sample test data
 const samplePRParams: ProcessPRParams = {
@@ -154,6 +164,9 @@ describe('ReviewProcessor', () => {
     mockCreateReviewerFromEnv.mockReturnValue(mockReviewer);
     mockGetPRDiff.mockResolvedValue(sampleDiffResult);
     mockPrismaReviewCreate.mockResolvedValue(sampleReviewRecord);
+    mockPrismaReviewFindUnique.mockResolvedValue({ ...sampleReviewRecord, status: 'APPROVED' });
+    mockTriggerTestReportAsync.mockImplementation(() => {});
+    mockIsReviewCompleted.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -517,6 +530,57 @@ describe('ReviewProcessor', () => {
           }),
         })
       );
+    });
+  });
+
+  describe('autoGenerateTestReport', () => {
+    it('should trigger test report generation by default when review is completed', async () => {
+      mockIsReviewCompleted.mockReturnValue(true);
+
+      const processor = new ReviewProcessor();
+      await processor.processPR(samplePRParams);
+
+      expect(mockTriggerTestReportAsync).toHaveBeenCalledWith({
+        reviewId: 'review-abc123',
+      });
+    });
+
+    it('should not trigger test report when autoGenerateTestReport is disabled', async () => {
+      mockIsReviewCompleted.mockReturnValue(true);
+
+      const processor = new ReviewProcessor({ autoGenerateTestReport: false });
+      await processor.processPR(samplePRParams);
+
+      expect(mockTriggerTestReportAsync).not.toHaveBeenCalled();
+    });
+
+    it('should not trigger test report when review is not completed', async () => {
+      mockIsReviewCompleted.mockReturnValue(false);
+
+      const processor = new ReviewProcessor();
+      await processor.processPR(samplePRParams);
+
+      expect(mockTriggerTestReportAsync).not.toHaveBeenCalled();
+    });
+
+    it('should not trigger test report in dry run mode', async () => {
+      const processor = new ReviewProcessor({ dryRun: true });
+      await processor.processPR(samplePRParams);
+
+      expect(mockTriggerTestReportAsync).not.toHaveBeenCalled();
+    });
+
+    it('should check review status before triggering test report', async () => {
+      mockPrismaReviewFindUnique.mockResolvedValue({ ...sampleReviewRecord, status: 'APPROVED' });
+      mockIsReviewCompleted.mockReturnValue(true);
+
+      const processor = new ReviewProcessor();
+      await processor.processPR(samplePRParams);
+
+      expect(mockPrismaReviewFindUnique).toHaveBeenCalledWith({
+        where: { id: 'review-abc123' },
+        select: { status: true },
+      });
     });
   });
 });
