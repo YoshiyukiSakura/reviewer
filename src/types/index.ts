@@ -194,3 +194,52 @@ export interface CommentFilterParams extends PaginationParams, SortParams {
   severity?: CommentSeverity
   authorId?: string
 }
+
+// Recommendation type for test reports
+export type TestReportRecommendation = 'MERGE' | 'NEEDS_CHANGES' | 'REJECT'
+
+// Test report interface
+export interface TestReport {
+  id: string
+  title: string
+  description?: string
+  recommendation: TestReportRecommendation
+  recommendationReason?: string
+  summary?: string
+  overallAnalysis?: string
+  score?: number
+  maxScore?: number
+  acceptanceSuggestion?: string
+  keyFindings?: string[]
+  concerns?: string[]
+  positives?: string[]
+  suggestions?: string[]
+  testDuration?: number
+  testRunner?: string
+  executionId: string
+  authorId: string
+  authorName?: string
+  repositoryName?: string
+  repositoryUrl?: string
+  branchName?: string
+  commitSha?: string
+  pullRequestId?: number
+  pullRequestUrl?: string
+  totalTasks?: number
+  completedTasks?: number
+  failedTasks?: number
+  skippedTasks?: number
+  executedAt?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Filter params for test reports
+export interface TestReportFilterParams extends PaginationParams, SortParams {
+  recommendation?: TestReportRecommendation
+  authorId?: string
+  executionId?: string
+  search?: string
+  fromDate?: Date
+  toDate?: Date
+}

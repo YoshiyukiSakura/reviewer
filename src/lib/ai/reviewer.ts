@@ -204,14 +204,20 @@ export interface ReviewError {
 /** Union type for review results */
 export type ReviewResultType<T> = ReviewSuccess<T> | ReviewError;
 
-// ========== Provider Implementations ==========
+// ========== Provider Types (Reusable for other modules) ==========
 
-interface ChatMessage {
+/**
+ * Chat message structure for AI API calls
+ */
+export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
-interface ChatCompletionResponse {
+/**
+ * Response from chat completion API
+ */
+export interface ChatCompletionResponse {
   content: string;
   tokenUsage?: {
     promptTokens: number;
@@ -219,6 +225,8 @@ interface ChatCompletionResponse {
     totalTokens: number;
   };
 }
+
+// ========== Provider Implementations ==========
 
 /**
  * Calls the OpenAI API
@@ -404,7 +412,7 @@ async function callAzureOpenAI(
 /**
  * Unified function to call AI provider
  */
-async function callAIProvider(
+export async function callAIProvider(
   config: AIReviewerConfig,
   messages: ChatMessage[]
 ): Promise<ChatCompletionResponse> {
@@ -420,12 +428,12 @@ async function callAIProvider(
   }
 }
 
-// ========== JSON Parsing Utilities ==========
+// ========== JSON Parsing Utilities (Reusable for other modules) ==========
 
 /**
  * Extracts JSON from a string that may contain markdown code blocks
  */
-function extractJSON(text: string): string {
+export function extractJSON(text: string): string {
   // Try to find JSON in code blocks first
   const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) {
@@ -444,7 +452,7 @@ function extractJSON(text: string): string {
 /**
  * Parses JSON safely with error handling
  */
-function parseJSONSafe<T>(text: string): T {
+export function parseJSONSafe<T>(text: string): T {
   const jsonStr = extractJSON(text);
   try {
     return JSON.parse(jsonStr) as T;

@@ -44,3 +44,11 @@ export {
   usePasswordChange,
 } from './use-settings'
 export type { UseProfileSettingsResult, UseNotificationSettingsResult, UsePasswordChangeResult } from './use-settings'
+
+// Test report hooks
+export {
+  useTestReports,
+  useTestReport,
+  useTestReportActions,
+} from './use-test-reports'
+export type { UseTestReportsResult, UseTestReportResult, UseTestReportActionsResult } from './use-test-reports'
