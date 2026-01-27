@@ -1,0 +1,39 @@
+name: MiniMax PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    runs-on: [self-hosted, linux]
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        env:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export CLAUDE_CODE_ALLOWED_TOOLS="Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*)"
+          minimax-code \
+            --dangerously-skip-permissions \
+            -p "你是一个代码审查助手。请执行以下步骤：
+
+1. 使用 gh pr diff ${{ github.event.pull_request.number }} 查看 PR 的代码变更
+2. 分析代码，关注：代码质量、潜在 Bug、性能问题、安全隐患
+3. 【必须执行】使用以下命令将审查意见发布到 PR：
+   gh pr comment ${{ github.event.pull_request.number }} --body '你的审查意见'
+
+重要：你必须执行 gh pr comment 命令来发布评论，不要只是输出内容。用中文撰写审查意见。"

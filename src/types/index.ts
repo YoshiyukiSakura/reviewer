@@ -99,3 +99,98 @@ export interface PaginatedResponse<T> {
   pageSize: number
   totalPages: number
 }
+
+// User type for authentication
+export interface User {
+  id: string
+  email?: string
+  name?: string
+  avatarUrl?: string
+  bio?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Notification settings
+export interface NotificationSettings {
+  id: string
+  userId: string
+  emailNotifications: boolean
+  pushNotifications: boolean
+  reviewAssignments: boolean
+  reviewComments: boolean
+  reviewStatusChanges: boolean
+  weeklyDigest: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Login credentials
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+// Auth response from API
+export interface AuthResponse {
+  user: User
+  token: string
+}
+
+// Stats types for dashboard
+export interface ReviewStats {
+  total: number
+  pending: number
+  inProgress: number
+  approved: number
+  changesRequested: number
+  closed: number
+}
+
+export interface CommentStats {
+  total: number
+  unresolved: number
+  bySeverity: {
+    info: number
+    suggestion: number
+    warning: number
+    critical: number
+  }
+}
+
+export interface DashboardStats {
+  reviews: ReviewStats
+  comments: CommentStats
+  activityOverTime: Array<{
+    date: string
+    reviews: number
+    comments: number
+  }>
+}
+
+// Pagination params
+export interface PaginationParams {
+  page?: number
+  pageSize?: number
+}
+
+// Sort params
+export interface SortParams {
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+// Filter params for reviews
+export interface ReviewFilterParams extends PaginationParams, SortParams {
+  status?: ReviewStatus
+  authorId?: string
+  search?: string
+}
+
+// Filter params for comments
+export interface CommentFilterParams extends PaginationParams, SortParams {
+  reviewId?: string
+  isResolved?: boolean
+  severity?: CommentSeverity
+  authorId?: string
+}
