@@ -94,7 +94,7 @@ export async function GET(request: Request) {
       }
     })
 
-    const totalReviews = reviewStats.reduce((sum, stat) => sum + stat._count.id, 0)
+    const totalReviews = reviewStats.reduce((sum: number, stat: { _count: { id: number } }) => sum + stat._count.id, 0)
 
     // Process comment stats
     const severityCounts = {
