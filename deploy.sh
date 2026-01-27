@@ -51,7 +51,7 @@ CREATE TABLE reviewer.reviewer_reviewcomment (
     severity TEXT,
     "authorId" TEXT NOT NULL,
     "authorName" TEXT,
-    parentId TEXT,
+    "parentId" TEXT,
     "reviewId" TEXT NOT NULL REFERENCES reviewer.reviewer_review(id) ON DELETE CASCADE,
     "createdAt" TIMESTAMP(3) DEFAULT NOW(),
     "updatedAt" TIMESTAMP(3)
