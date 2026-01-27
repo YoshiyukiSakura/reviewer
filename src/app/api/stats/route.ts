@@ -88,8 +88,8 @@ export async function GET(request: Request) {
       CLOSED: 0,
     }
 
-    reviewStats.forEach((stat) => {
-      if (stat.status in reviewsByStatus) {
+    reviewStats.forEach((stat: { status: string | null; _count: { id: number } }) => {
+      if (stat.status && stat.status in reviewsByStatus) {
         reviewsByStatus[stat.status as keyof typeof reviewsByStatus] = stat._count.id
       }
     })
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
 
     const [totalComments, unresolvedCount, severityData] = commentStats
 
-    severityData.forEach((stat) => {
+    severityData.forEach((stat: { severity: string | null; _count: { id: number } }) => {
       if (stat.severity && stat.severity in severityCounts) {
         severityCounts[stat.severity as keyof typeof severityCounts] = stat._count.id
       }
