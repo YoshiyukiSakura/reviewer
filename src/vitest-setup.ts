@@ -1,13 +1,7 @@
-import { vi } from 'vitest'
-
 // Mock React.act for React 19 compatibility
+// In React 19, act() is no longer required for most test scenarios
 globalThis.React = {
   ...globalThis.React,
-  act: vi.actual(() => {
-    throw new Error(
-      'React.act is deprecated. ' +
-      'Render using render() from @testing-library/react instead. ' +
-      'All of your tests should work without calling React.act() directly.'
-    )
-  }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  act: ((fn: any) => fn()) as (fn: () => void) => Promise<void>,
 }

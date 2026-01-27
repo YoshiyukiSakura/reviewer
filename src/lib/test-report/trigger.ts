@@ -148,7 +148,7 @@ export async function triggerTestReport(
       keyFindings: generatedResult?.keyFindings || [],
       concerns: generatedResult?.concerns || [],
       positives: generatedResult?.positives || [],
-      suggestions: generatedResult?.suggestions || null,
+      suggestions: generatedResult?.suggestions || [],
       repositoryName: contextResult.data.plan?.repositoryName || null,
       repositoryUrl: contextResult.data.plan?.repositoryUrl || null,
       branchName: contextResult.data.plan?.branchName || null,

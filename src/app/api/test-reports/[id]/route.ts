@@ -34,7 +34,7 @@ export async function GET(
 
     return NextResponse.json(testReport)
   } catch (error) {
-    log.error('Get test report error:', error)
+    log.error('Get test report error:', { error: String(error) })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -71,7 +71,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Test report deleted successfully' })
   } catch (error) {
-    log.error('Delete test report error:', error)
+    log.error('Delete test report error:', { error: String(error) })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

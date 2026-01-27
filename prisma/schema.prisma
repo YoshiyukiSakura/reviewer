@@ -8,14 +8,15 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "reviewer"]
 }
 
 // Review model - represents a code review session
 model Review {
-  id          String       @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
   description String?
-  status      ReviewStatus @default(PENDING)
+  status      ReviewerReviewStatus @default(PENDING)
 
   // Source information (e.g., pull request, commit, etc.)
   sourceType String? // e.g., "pull_request", "commit", "file"
@@ -33,6 +34,7 @@ model Review {
   // Relations
   comments ReviewComment[]
 
+  @@map("reviewer_Review")
   @@index([authorId])
   @@index([status])
   @@index([createdAt])
@@ -49,8 +51,8 @@ model ReviewComment {
   lineEnd   Int? // Ending line number (for multi-line comments)
 
   // Comment metadata
-  isResolved Boolean          @default(false)
-  severity   CommentSeverity?
+  isResolved Boolean              @default(false)
+  severity   ReviewerCommentSeverity?
 
   // Author information
   authorId   String
@@ -69,14 +71,15 @@ model ReviewComment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@map("reviewer_ReviewComment")
   @@index([reviewId])
   @@index([authorId])
   @@index([parentId])
   @@index([filePath])
 }
 
-// Enum for review status
-enum ReviewStatus {
+// Enum for review status (prefixed to avoid conflict)
+enum ReviewerReviewStatus {
   PENDING
   IN_PROGRESS
   APPROVED
@@ -85,8 +88,8 @@ enum ReviewStatus {
   CLOSED
 }
 
-// Enum for comment severity
-enum CommentSeverity {
+// Enum for comment severity (prefixed to avoid conflict)
+enum ReviewerCommentSeverity {
   INFO
   SUGGESTION
   WARNING
@@ -108,7 +111,6 @@ model User {
   name         String?
   password     String?
   avatarUrl    String?
-  bio          String?
   slackUserId  String?   @unique
 
   createdAt    DateTime  @default(now())
@@ -117,6 +119,7 @@ model User {
   // Relations
   notificationSettings NotificationSettings?
 
+  @@map("reviewer_User")
   @@index([email])
 }
 
@@ -141,6 +144,7 @@ model NotificationSettings {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  @@map("reviewer_NotificationSettings")
   @@index([userId])
 }
 
@@ -199,6 +203,7 @@ model TestReport {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  @@map("reviewer_TestReport")
   @@index([authorId])
   @@index([recommendation])
   @@index([executedAt])

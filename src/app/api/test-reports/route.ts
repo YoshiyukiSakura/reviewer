@@ -106,7 +106,7 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / pageSize),
     });
   } catch (error) {
-    log.error('Get test reports error:', error);
+    log.error('Get test reports error:', { error: String(error) });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        log.error('AI report generation error:', errorMessage);
+        log.error('AI report generation error:', { error: errorMessage });
       }
     }
 
@@ -260,7 +260,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(testReport, { status: existingReport ? 200 : 201 });
   } catch (error) {
-    log.error('Create test report error:', error);
+    log.error('Create test report error:', { error: String(error) });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

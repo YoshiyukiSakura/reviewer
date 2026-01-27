@@ -34,7 +34,7 @@ function formatDate(date: Date | string | undefined): string {
  * Calculate task completion percentage
  */
 function calculateCompletionPercentage(report: TestReport): number {
-  const { totalTasks, completedTasks } = report
+  const { totalTasks, completedTasks = 0 } = report
   if (!totalTasks || totalTasks === 0) return 0
   return Math.round((completedTasks / totalTasks) * 100)
 }
@@ -43,7 +43,7 @@ function calculateCompletionPercentage(report: TestReport): number {
  * Calculate success rate (completed + skipped / total)
  */
 function calculateSuccessRate(report: TestReport): number {
-  const { totalTasks, completedTasks, skippedTasks } = report
+  const { totalTasks, completedTasks = 0, skippedTasks = 0 } = report
   if (!totalTasks || totalTasks === 0) return 0
   return Math.round(((completedTasks + skippedTasks) / totalTasks) * 100)
 }
@@ -52,7 +52,7 @@ function calculateSuccessRate(report: TestReport): number {
  * Calculate stability score based on pass/fail ratio
  */
 function calculateStabilityScore(report: TestReport): number {
-  const { totalTasks, completedTasks, failedTasks, skippedTasks } = report
+  const { totalTasks, completedTasks = 0, failedTasks = 0, skippedTasks = 0 } = report
   if (!totalTasks || totalTasks === 0) return 100
   // Higher weight on completed, some weight on skipped, penalty for failed
   const score =
@@ -420,19 +420,19 @@ function CompletionAnalysisSection({ report }: { report: TestReport }) {
               <div
                 className="bg-green-500 h-full"
                 style={{
-                  width: `${(completedTasks / totalTasks) * 100}%`,
+                  width: `${((completedTasks ?? 0) / totalTasks) * 100}%`,
                 }}
               />
               <div
                 className="bg-red-500 h-full"
                 style={{
-                  width: `${(failedTasks / totalTasks) * 100}%`,
+                  width: `${((failedTasks ?? 0) / totalTasks) * 100}%`,
                 }}
               />
               <div
                 className="bg-yellow-500 h-full"
                 style={{
-                  width: `${(skippedTasks / totalTasks) * 100}%`,
+                  width: `${((skippedTasks ?? 0) / totalTasks) * 100}%`,
                 }}
               />
             </div>

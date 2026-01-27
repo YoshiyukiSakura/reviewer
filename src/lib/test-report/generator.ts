@@ -18,9 +18,12 @@ import {
 import {
   generateTestReportPrompt,
   SYSTEM_PROMPT_TEST_REPORT,
-  type TestReportResult,
+  type TestReportResult as TestReportResultType,
   type TestReportRecommendation,
 } from './prompts';
+
+// Re-export types for convenience
+export type { TestReportResultType as TestReportResult };
 import type { TestReportContext } from './collector';
 import { log } from '../remote-log';
 
@@ -85,7 +88,7 @@ export interface GenerateTestReportParams {
 /**
  * Validates the AI response against the expected TestReportResult structure
  */
-function validateTestReportResult(data: unknown): TestReportResult {
+function validateTestReportResult(data: unknown): TestReportResultType {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid response: expected an object');
   }
@@ -203,7 +206,7 @@ export class TestReportGenerator {
    * @param params - Parameters including context and optional additional instructions
    * @returns GenerateResult containing the TestReportResult or an error
    */
-  async generate(params: GenerateTestReportParams): Promise<GenerateResult<TestReportResult>> {
+  async generate(params: GenerateTestReportParams): Promise<GenerateResult<TestReportResultType>> {
     const startTime = Date.now();
     const { context, additionalContext } = params;
 

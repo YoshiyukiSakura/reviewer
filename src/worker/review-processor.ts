@@ -770,6 +770,7 @@ export class GitHubActionReviewProcessor {
       githubToken: config.githubToken || process.env.GITHUB_TOKEN || '',
       postToGitHub: config.postToGitHub ?? true,
       eventPath: config.eventPath || process.env.GITHUB_EVENT_PATH || '',
+      autoGenerateTestReport: config.autoGenerateTestReport ?? false,
     };
   }
 
