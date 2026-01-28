@@ -116,12 +116,22 @@ export async function GET(request: Request) {
     return NextResponse.json({
       reviews: {
         total: totalReviews,
-        ...reviewsByStatus,
+        pending: reviewsByStatus.PENDING,
+        inProgress: reviewsByStatus.IN_PROGRESS,
+        approved: reviewsByStatus.APPROVED,
+        changesRequested: reviewsByStatus.CHANGES_REQUESTED,
+        closed: reviewsByStatus.CLOSED,
       },
       comments: {
         total: totalComments,
         unresolved: unresolvedCount,
-        bySeverity: severityCounts,
+        bySeverity: {
+          info: severityCounts.INFO,
+          suggestion: severityCounts.SUGGESTION,
+          warning: severityCounts.WARNING,
+          error: severityCounts.ERROR,
+          critical: severityCounts.CRITICAL,
+        },
       },
       activityOverTime: activityData,
     })
