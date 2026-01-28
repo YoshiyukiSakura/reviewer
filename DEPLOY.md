@@ -6,7 +6,7 @@
 - **服务器**: ubuntu@15.235.212.36
 - **应用目录**: /home/ubuntu/apps/reviewer
 - **端口**: 38964
-- **PM2 进程名**: reviewer-web, reviewer-worker
+- **PM2 进程名**: reviewer-web
 - **反向代理**: Nginx sub path `/reviewer`
 - **数据库**: 共享 `seeder` 数据库（与 seeder、farmer 共用）
 
@@ -20,8 +20,7 @@ ssh ubuntu@15.235.212.36 "cd /home/ubuntu/apps/reviewer && \
   git pull origin main && \
   npm ci && \
   npm run build && \
-  pm2 restart reviewer-web && \
-  pm2 restart reviewer-worker"
+  pm2 restart reviewer-web"
 ```
 
 或使用本地脚本：
@@ -55,9 +54,9 @@ ssh ubuntu@15.235.212.36 "cd /home/ubuntu/apps/reviewer && \
   rm -rf .next node_modules/.cache && \
   npm ci && \
   npm run build && \
-  pm2 delete reviewer-web reviewer-worker 2>/dev/null; \
+  pm2 delete reviewer-web 2>/dev/null; \
   PORT=38964 pm2 start npm --name reviewer-web -- run start && \
-  pm2 start npm --name reviewer-worker -- run \"npx tsx src/index.ts\""
+  pm2 save"
 ```
 
 ## 验证部署
@@ -68,10 +67,9 @@ ssh ubuntu@15.235.212.36 "pm2 list | grep reviewer"
 
 # 检查启动日志
 ssh ubuntu@15.235.212.36 "pm2 logs reviewer-web --nostream --lines 50"
-ssh ubuntu@15.235.212.36 "pm2 logs reviewer-worker --nostream --lines 50"
 
-# 测试 API 健康端点
-curl https://copilot.wildmeta.ai/reviewer/api/health
+# 测试 API 端点
+curl https://copilot.wildmeta.ai/reviewer/api/stats
 
 # 浏览器访问
 # https://copilot.wildmeta.ai/reviewer
@@ -85,14 +83,12 @@ ssh ubuntu@15.235.212.36 "pm2 status"
 
 # 查看日志
 ssh ubuntu@15.235.212.36 "pm2 logs reviewer-web --nostream --lines 50"
-ssh ubuntu@15.235.212.36 "pm2 logs reviewer-worker --nostream --lines 50"
 
 # 重启服务
 ssh ubuntu@15.235.212.36 "pm2 restart reviewer-web"
-ssh ubuntu@15.235.212.36 "pm2 restart reviewer-worker"
 
 # 停止服务
-ssh ubuntu@15.235.212.36 "pm2 stop reviewer-web reviewer-worker"
+ssh ubuntu@15.235.212.36 "pm2 stop reviewer-web"
 
 # 保存 PM2 进程列表
 ssh ubuntu@15.235.212.36 "pm2 save"
@@ -115,7 +111,7 @@ ssh ubuntu@15.235.212.36 "lsof -i :38964"
 ssh ubuntu@15.235.212.36 "lsof -i :38965"
 
 # 如需释放端口
-ssh ubuntu@15.235.212.36 "pm2 stop reviewer-web reviewer-worker"
+ssh ubuntu@15.235.212.36 "pm2 stop reviewer-web"
 ```
 
 ### 问题3: 构建失败
