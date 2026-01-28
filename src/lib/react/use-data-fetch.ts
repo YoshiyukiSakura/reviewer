@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { axiosInstance, HttpError } from '@/lib/http'
 
 /**
@@ -42,9 +42,13 @@ export function useDataFetch<T>(
   const [error, setError] = useState<HttpError | null>(null)
   const [isRefetching, setIsRefetching] = useState(false)
 
-  const fetchData = useCallback(async () => {
+  // Use refs to avoid infinite loop in useCallback dependencies
+  const hasFetchedRef = useRef(false)
+  const isMountedRef = useRef(true)
+
+  const fetchData = useCallback(async (isRefetch = false) => {
     try {
-      if (!isLoading && data !== null) {
+      if (isRefetch) {
         setIsRefetching(true)
       }
       setIsLoading(true)
@@ -53,26 +57,37 @@ export function useDataFetch<T>(
       const response = await axiosInstance.get<T>(url)
       const result = select ? select(response.data) : response.data
 
-      setData(result)
-      onSuccess?.(result)
+      if (isMountedRef.current) {
+        setData(result)
+        onSuccess?.(result)
+      }
       return result
     } catch (err) {
       const httpError = err instanceof HttpError ? err : new HttpError(
         err instanceof Error ? err.message : 'An unexpected error occurred',
         0
       )
-      setError(httpError)
-      onError?.(httpError)
+      if (isMountedRef.current) {
+        setError(httpError)
+        onError?.(httpError)
+      }
       return null
     } finally {
-      setIsLoading(false)
-      setIsRefetching(false)
+      if (isMountedRef.current) {
+        setIsLoading(false)
+        setIsRefetching(false)
+      }
     }
-  }, [url, select, onSuccess, onError, isLoading, data])
+  }, [url, select, onSuccess, onError])
 
   useEffect(() => {
-    if (immediate) {
+    isMountedRef.current = true
+    if (immediate && !hasFetchedRef.current) {
+      hasFetchedRef.current = true
       fetchData()
+    }
+    return () => {
+      isMountedRef.current = false
     }
   }, [immediate, fetchData])
 
@@ -80,7 +95,7 @@ export function useDataFetch<T>(
     data,
     isLoading,
     error,
-    refetch: () => fetchData().then(() => {}),
+    refetch: () => fetchData(true).then(() => {}),
     isRefetching,
   }
 }
