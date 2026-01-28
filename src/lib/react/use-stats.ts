@@ -143,12 +143,13 @@ export function useActivityStats(options: ActivityStatsOptions = {}): UseActivit
 
   const url = buildUrl()
 
-  const result = useDataFetch<ActivityDataPoint[]>(url, {
+  // API returns { reviews, comments, activityOverTime } - we need activityOverTime
+  const result = useDataFetch<{ activityOverTime: ActivityDataPoint[] }>(url, {
     immediate: true,
   })
 
   return {
-    data: result.data ?? [],
+    data: result.data?.activityOverTime ?? [],
     isLoading: result.isLoading,
     error: result.error,
     refetch: result.refetch,
