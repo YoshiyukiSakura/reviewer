@@ -11,10 +11,18 @@ export interface HttpClientConfig {
 
 /**
  * Get the API base URL from environment variables
- * Falls back to localhost:3000 for development
+ * Falls back to basePath + /api for same-origin API requests
  */
 export function getBaseURL(): string {
-  return process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+  if (process.env.API_BASE_URL) {
+    return process.env.API_BASE_URL
+  }
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL
+  }
+  // Default to basePath + /api for Next.js apps
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/reviewer'
+  return `${basePath}/api`
 }
 
 /**

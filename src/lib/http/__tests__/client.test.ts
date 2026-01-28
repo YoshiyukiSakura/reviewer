@@ -187,12 +187,13 @@ describe('http/config', () => {
       })
     })
 
-    it('should return localhost:3000 as default', () => {
+    it('should return basePath + /api as default', () => {
       delete process.env.API_BASE_URL
       delete process.env.NEXT_PUBLIC_API_URL
+      delete process.env.NEXT_PUBLIC_BASE_PATH
       jest.isolateModules(() => {
         const { getBaseURL } = require('../config')
-        expect(getBaseURL()).toBe('http://localhost:3000')
+        expect(getBaseURL()).toBe('/reviewer/api')
       })
     })
   })

@@ -90,7 +90,7 @@ export interface UseReviewCommentsResult {
  * Hook to fetch all comments for a specific review
  */
 export function useReviewComments(reviewId: string): UseReviewCommentsResult {
-  const result = useDataFetch<ReviewComment[]>(`/reviews/${reviewId}/comments`, {
+  const result = useDataFetch<ReviewComment[]>(`/comments?reviewId=${reviewId}`, {
     immediate: !!reviewId,
   })
 
@@ -199,7 +199,7 @@ export interface UseUnresolvedCommentsResult {
  */
 export function useUnresolvedComments(reviewId: string): UseUnresolvedCommentsResult {
   const result = useDataFetch<ReviewComment[]>(
-    `/reviews/${reviewId}/comments?isResolved=false`,
+    `/comments?reviewId=${reviewId}&isResolved=false`,
     { immediate: !!reviewId }
   )
 

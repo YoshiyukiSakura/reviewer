@@ -20,7 +20,7 @@ export interface UseDashboardStatsResult {
  * Hook to fetch dashboard statistics
  */
 export function useDashboardStats(): UseDashboardStatsResult {
-  const result = useDataFetch<DashboardStats>('/stats/dashboard', {
+  const result = useDataFetch<DashboardStats>('/stats', {
     immediate: true,
   })
 
@@ -48,7 +48,7 @@ export interface UseReviewStatsResult {
  * Hook to fetch review statistics
  */
 export function useReviewStats(): UseReviewStatsResult {
-  const result = useDataFetch<ReviewStats>('/stats/reviews', {
+  const result = useDataFetch<ReviewStats>('/stats', {
     immediate: true,
   })
 
@@ -76,7 +76,7 @@ export interface UseCommentStatsResult {
  * Hook to fetch comment statistics
  */
 export function useCommentStats(): UseCommentStatsResult {
-  const result = useDataFetch<CommentStats>('/stats/comments', {
+  const result = useDataFetch<CommentStats>('/stats', {
     immediate: true,
   })
 
@@ -138,7 +138,7 @@ export function useActivityStats(options: ActivityStatsOptions = {}): UseActivit
       params.set('endDate', endDate)
     }
 
-    return `/stats/activity?${params.toString()}`
+    return `/stats?${params.toString()}`
   }
 
   const url = buildUrl()
@@ -179,7 +179,7 @@ export function useUserStats(userId: string): UseUserStatsResult {
     approvalRate: number
   }
 
-  const result = useDataFetch<UserStatsData>(`/stats/users/${userId}`, {
+  const result = useDataFetch<UserStatsData>(`/stats?userId=${userId}`, {
     immediate: !!userId,
   })
 
@@ -207,11 +207,11 @@ export interface UseStatsActionsResult {
  */
 export function useStatsActions(): UseStatsActionsResult {
   const refreshStats = useCallback(async (): Promise<void> => {
-    await axiosInstance.post('/stats/refresh')
+    await axiosInstance.post('/stats')
   }, [])
 
   const exportStats = useCallback(async (format: 'json' | 'csv' | 'pdf'): Promise<void> => {
-    const response = await axiosInstance.get(`/stats/export?format=${format}`, {
+    const response = await axiosInstance.get(`/stats?format=${format}`, {
       responseType: 'blob',
     })
 
